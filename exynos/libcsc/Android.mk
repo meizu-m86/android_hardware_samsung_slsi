@@ -1,0 +1,44 @@
+LOCAL_PATH := $(call my-dir)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SRC_FILES := \
+	csc.c
+
+LOCAL_C_INCLUDES := \
+	$(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include \
+	hardware/samsung_slsi/$(TARGET_BOARD_PLATFORM)/include \
+	$(LOCAL_PATH)/../include \
+	$(LOCAL_PATH)/../libexynosutils
+
+LOCAL_ADDITIONAL_DEPENDENCIES := \
+	$(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+
+LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
+
+LOCAL_CFLAGS :=
+
+LOCAL_MODULE := libcsc
+
+LOCAL_PRELINK_MODULE := false
+
+LOCAL_ARM_MODE := arm
+
+LOCAL_STATIC_LIBRARIES := libswconverter
+LOCAL_SHARED_LIBRARIES := liblog libexynosutils libexynosscaler
+
+LOCAL_CFLAGS += -DUSE_SAMSUNG_COLORFORMAT -DUSES_GSCALER
+
+
+LOCAL_CFLAGS += -DDEFAULT_CSC_HW=5
+
+
+LOCAL_SHARED_LIBRARIES += libexynosgscaler
+
+
+LOCAL_CFLAGS += -DUSES_DEFAULT_CSC_HW_SCALER
+
+
+include $(BUILD_SHARED_LIBRARY)
