@@ -482,7 +482,7 @@ int lxScriboRegister(char *dev) {
 		lxWriteRead = lxI2cWriteRead;
 		lxScriboInit= lxI2cInit;
 		isDirect=1; // no scribo involved
-		VERBOSE printf("%s: i2c\n", __FUNCTION__);
+		VERBOSE ALOGD("%s: i2c\n", __FUNCTION__);
 	}
 	else if ( strncmp (dev, "/dev/smartpa_i2c",  sizeof("/dev/smartpa_i2c") -1) == 0 ) {
 		lxWrite = lxI2cWrite;

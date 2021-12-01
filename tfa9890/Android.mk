@@ -32,7 +32,7 @@
 # have been modified by MediaTek Inc. All revisions are subject to any receiver's
 # applicable license agreements with MediaTek Inc.
 
-ifeq ($(strip $(NXP_SMARTPA_SUPPORT)),tfa9890)
+
 
 LOCAL_PATH:= $(call my-dir)
 
@@ -116,7 +116,7 @@ LOCAL_SRC_FILES:=  \
                     app/climax/src/climax.c \
                     app/climax/src/cliCommands.c \
                     app/climax/src/cli/cmdline.c
-LOCAL_MODULE := climax_hostSW
+LOCAL_MODULE := climax_tfa9890
 LOCAL_SHARED_LIBRARIES:= libcutils libutils
 LOCAL_STATIC_LIBRARIES:= libtfasrv libtfa98xx libtfahal  
 LOCAL_MODULE_TAGS := optional
@@ -124,6 +124,25 @@ LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_EXECUTABLE)
 
-###############################################
 
-endif
+############################## libtfa9890
+include $(CLEAR_VARS)
+LOCAL_C_INCLUDES:=     $(LOCAL_PATH)/srv/inc\
+                        $(LOCAL_PATH)/tfa/inc\
+                        $(LOCAL_PATH)/hal/inc\
+                        $(LOCAL_PATH)/app/exTfa98xx/inc \
+                        $(LOCAL_PATH)/hal/src
+
+LOCAL_SRC_FILES:=     tfa9890_interface.c
+#LOCAL_SRC_FILES:=     app/exTfa98xx/src/main_mono.c
+#LOCAL_SRC_FILES:=     app/exTfa98xx/src/main_stereo.c
+
+LOCAL_CFLAGS:=-DAndroid
+LOCAL_MODULE := libtfa9890
+LOCAL_SHARED_LIBRARIES:= libcutils libutils
+LOCAL_STATIC_LIBRARIES:= libtfasrv libtfa98xx libtfahal
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRELINK_MODULE := false
+
+include $(BUILD_SHARED_LIBRARY)
+###############################################

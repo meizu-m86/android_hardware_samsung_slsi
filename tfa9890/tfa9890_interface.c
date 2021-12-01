@@ -166,14 +166,14 @@ static void muteAmplifier(Tfa98xx_handle_t handle)
     err = Tfa98xx_SetMute(handle, Tfa98xx_Mute_Amplifier);
     if(err != Tfa98xx_Error_Ok) {
         ALOGE("FUNC: %s, LINE: %s", __func__, __LINE__);
-        return err;
+        return;
     }
 
     /* now wait for the amplifier to turn off */
     err = Tfa98xx_ReadRegister16(handle, TFA98XX_STATUSREG, &status);
     if(err != Tfa98xx_Error_Ok) {
         ALOGE("FUNC: %s, LINE: %s", __func__, __LINE__);
-        return err;
+        return ;
     }
 
     do {
@@ -870,7 +870,7 @@ static int checkMTPEX(Tfa98xx_handle_t handle)
 
 int tfa9890_deinit(void)
 {
-	 Tfa98xx_handle_t *handle = g_handle;
+	 Tfa98xx_handle_t handle = g_handle;
 	 Tfa98xx_Error_t err = Tfa98xx_Error_Ok;
    if(first)
    {
@@ -894,7 +894,7 @@ int tfa9890_deinit(void)
 
 
 
-int tfa9890_init()
+int NxpTfa98xx_StartUp(int sampling_rate)
 {
     Tfa98xx_Error_t err = Tfa98xx_Error_Ok;
     Tfa98xx_handle_t handle;
@@ -989,6 +989,7 @@ int tfa9890_init()
         iRead |= (8<<TFA98XX_BAT_PROT_BSST_POS);
         err = Tfa98xx_WriteRegister16( handle, TFA98XX_BAT_PROT, iRead);
     }
+    //tfa9890_setSamplerate(sampling_rate);
     first = 1;
     ALOGD("%s -",__func__);
     return 1;
@@ -1005,7 +1006,7 @@ static int get_bypass_dsp_incall()
     return bypass_dsp_incall;
 }
 
-void tfa9890_SpeakerOn(void)
+void NxpTfa98xx_PowerOn(int mode, int sampling_rate, int volume)
 {
     TFA_LOGD("+");
     Tfa98xx_Error_t err = Tfa98xx_Error_Ok;
@@ -1013,7 +1014,7 @@ void tfa9890_SpeakerOn(void)
 
     ALOGD("%s +, first_flag= %d",__func__,first);
     if (!first) {
-         tfa9890_init(SAMPLE_RATE);
+         NxpTfa98xx_StartUp(SAMPLE_RATE);
     }
 #ifdef BYPASS_DSP_INCALL
     if(get_bypass_dsp_incall()) {
@@ -1035,7 +1036,7 @@ void tfa9890_SpeakerOn(void)
     }
     // Sleep 15ms to wait for DSP stabled
     usleep(25*1000);
-
+    //Tfa98xx_SetVolume(handle,volume);
 #ifdef BYPASS_DSP_INCALL
     if(get_bypass_dsp_incall()) {
         err = Tfa98xx_SetMute(handle, Tfa98xx_Mute_Off + 10);
@@ -1122,7 +1123,7 @@ void tfa9890_reset(void)
 {
     first = 0;
 }
-
+/*
 EXPORT_SYMBOL(tfa9890_init);
 EXPORT_SYMBOL(tfa9890_deinit);
 EXPORT_SYMBOL(tfa9890_reset);
@@ -1133,4 +1134,12 @@ EXPORT_SYMBOL(tfa9890_setSamplerate);
 EXPORT_SYMBOL(tfa9890_set_bypass_dsp_incall);
 EXPORT_SYMBOL(tfa9890_EchoReferenceConfigure);
 EXPORT_SYMBOL(tfa9890_check_tfaopen);
+*/
+
+
+int NxpTfa98xx_ReCalibrate(){return 0;}
+int NxpTfa98xx_Stop(){return 0;}
+int NxpTfa98xx_GetSpeakerImpedance(){return 0;}
+int NxpTfa98xx_SetMute(int mute){return 0;}
+int NxpTfa98xx_PowerOff(){return 0;}
 

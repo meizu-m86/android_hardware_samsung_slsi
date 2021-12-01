@@ -363,7 +363,7 @@ void CmdProcess(void* buf, int len)
 							{
 								v = 1;
 							}
-							gui_SetValue(ITEM_ID_STANDALONE, v);
+							gui_SetValue(ITEM_ID_STANDALONE, &v);
 							Result(cmd, eNone, 0);
 						}
 						else
