@@ -103,19 +103,10 @@ class ExynosExternalDisplay : public ExynosDisplay {
         bool isIONBufferAllocated() {return mFlagIONBufferAllocated;};
 
         virtual int openHdmi();
-        virtual void closeHdmi();
         virtual int blank();
         virtual int prepare(hwc_display_contents_1_t* contents);
         virtual int set(hwc_display_contents_1_t* contents);
-        virtual void allocateLayerInfos(hwc_display_contents_1_t* contents);
-        virtual int32_t getDisplayAttributes(const uint32_t attribute, uint32_t config = 0);
-        virtual void determineYuvOverlay(hwc_display_contents_1_t *contents);
-        virtual void determineSupportedOverlays(hwc_display_contents_1_t *contents);
         virtual int clearDisplay();
-        virtual void freeExtVideoBuffers();
-        virtual int getDisplayConfigs(uint32_t *configs, size_t *numConfigs);
-        virtual int getActiveConfig();
-        virtual int setActiveConfig(int index);
 
         bool                    mEnabled;
         bool                    mBlanked;
@@ -127,13 +118,8 @@ class ExynosExternalDisplay : public ExynosDisplay {
     protected:
         void skipUILayers(hwc_display_contents_1_t *contents);
         int getDVTimingsIndex(int preset);
-        virtual void handleStaticLayers(hwc_display_contents_1_t *contents, struct decon_win_config_data &win_data, int tot_ovly_wins);
         void cleanConfigurations();
         void dumpConfigurations();
-        virtual void configureHandle(private_handle_t *handle, size_t index, hwc_layer_1_t &layer, int fence_fd, decon_win_config &cfg);
-        virtual int postMPPM2M(hwc_layer_1_t &layer, struct decon_win_config *config, int win_map, int index);
-        virtual int postFrame(hwc_display_contents_1_t *contents);
-        virtual void doPreProcessing(hwc_display_contents_1_t* contents);
     private:
         buffer_handle_t         mDRMTempBuffer;
         bool mFlagIONBufferAllocated;

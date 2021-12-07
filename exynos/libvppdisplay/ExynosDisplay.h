@@ -145,7 +145,6 @@ class ExynosDisplay {
 
         virtual int prepare(hwc_display_contents_1_t *contents);
         virtual int set(hwc_display_contents_1_t *contents);
-        virtual int setPowerMode(int mode);
         virtual void dump(android::String8& result);
         virtual void freeMPP();
         virtual void allocateLayerInfos(hwc_display_contents_1_t* contents);
@@ -154,8 +153,6 @@ class ExynosDisplay {
         virtual bool handleTotalBandwidthOverload(hwc_display_contents_1_t *contents);
         virtual int clearDisplay();
         int getCompModeSwitch();
-        virtual int32_t getDisplayAttributes(const uint32_t attribute, uint32_t config = 0);
-        virtual void preAssignFbTarget(hwc_display_contents_1_t *contents, bool assign);
         virtual void determineYuvOverlay(hwc_display_contents_1_t *contents);
         virtual void determineSupportedOverlays(hwc_display_contents_1_t *contents);
         virtual void determineBandwidthSupport(hwc_display_contents_1_t *contents);
@@ -168,10 +165,8 @@ class ExynosDisplay {
         void dumpContents(android::String8& result, hwc_display_contents_1_t *contents);
         int checkConfigValidation(decon_win_config *config);
 
-        virtual int getDisplayConfigs(uint32_t *configs, size_t *numConfigs);
         virtual int getActiveConfig() {return mActiveConfigIndex;};
         virtual int setActiveConfig(int __unused index) {return 0;};
-        virtual void dupFence(int fence, hwc_display_contents_1_t *contents);
 
         /* Fields */
         int                     mDisplayFd;
@@ -261,10 +256,6 @@ class ExynosDisplay {
         virtual bool isBothMPPProcessingRequired(hwc_layer_1_t &layer, hwc_layer_1_t *extMPPOutLayer);
         virtual bool multipleRGBScaling(int format);
         virtual void doPreProcessing(hwc_display_contents_1_t* contents);
-        virtual bool isSourceCropfSupported(hwc_layer_1_t layer);
-        virtual int getDeconDMAType(ExynosMPPModule* internalMPP);
-        virtual bool isOverlaySupportedByIDMA(hwc_layer_1_t &layer, size_t index);
-        virtual void getIDMAMinSize(hwc_layer_1_t &layer, int *w, int *h);
         bool checkConfigChanged(struct decon_win_config_data &lastConfigData, struct decon_win_config_data &newConfigData);
 };
 #endif

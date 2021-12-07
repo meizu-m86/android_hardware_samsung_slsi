@@ -315,7 +315,6 @@ void ExynosDisplayResourceManager::handleHighPriorityLayers(hwc_display_contents
      * Assign all of MPPs to the diplay for Video
      */
     addUnAssignedIntMpp(display);
-    display->preAssignFbTarget(contents, reserveFbTarget);
     display->determineYuvOverlay(contents);
 
     // Remove all MPPs that were not assigned
@@ -404,8 +403,6 @@ int ExynosDisplayResourceManager::assignResources(size_t numDisplays, hwc_displa
                 noExtVideoBuffer = false;
         }
 
-        if (noExtVideoBuffer)
-            mHwc->externalDisplay->freeExtVideoBuffers();
     }
 
     /* Clear assigned flag */

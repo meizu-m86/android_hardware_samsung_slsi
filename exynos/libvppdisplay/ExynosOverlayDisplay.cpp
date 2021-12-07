@@ -76,7 +76,6 @@ int ExynosOverlayDisplay::set_dual(hwc_display_contents_1_t *contentsPrimary, hw
             if (dup_fd >= 0)  {
                 fence = dup_fd;
                 mLastRetireFenceFd = dup_fd;
-                dupFence(fence, contentsPrimary);
             } else {
                 DISPLAY_LOGW("mLastRetireFenceFd dup failed: %s", strerror(errno));
                 mLastRetireFenceFd = -1;
@@ -86,10 +85,8 @@ int ExynosOverlayDisplay::set_dual(hwc_display_contents_1_t *contentsPrimary, hw
         }
     } else {
         mLastRetireFenceFd = fence;
-        dupFence(fence, contentsPrimary);
     }
     mHwc->secondaryDisplay->mLastRetireFenceFd = fence;
-    mHwc->secondaryDisplay->dupFence(fence, contentsSecondary);
 
     return err;
 }
