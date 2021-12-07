@@ -13,10 +13,6 @@ uint32_t hwcHeaderVersion(const hwc_composer_device_1_t* hwc) {
     return hwcVersion & HARDWARE_API_VERSION_2_HEADER_MASK;
 }
 
-bool hwcHasApiVersion(const hwc_composer_device_1_t* hwc,
-        uint32_t version) {
-    return hwcApiVersion(hwc) >= (version & HARDWARE_API_VERSION_2_MAJ_MIN_MASK);
-}
 void dumpHandle(private_handle_t *h)
 {
     ALOGV("\t\tformat = %d, width = %u, height = %u, stride = %u, vstride = %u",

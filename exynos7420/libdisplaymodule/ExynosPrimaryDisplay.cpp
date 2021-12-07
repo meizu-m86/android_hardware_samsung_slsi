@@ -311,28 +311,6 @@ int ExynosPrimaryDisplay::handleWindowUpdate(hwc_display_contents_1_t __unused *
                 currentRect.top    = config[windowIndex].dst.y;
                 currentRect.bottom = config[windowIndex].dst.y + config[windowIndex].dst.h;
 
-                if (hwcHasApiVersion((hwc_composer_device_1_t*)mHwc, HWC_DEVICE_API_VERSION_1_5))
-                {
-                    private_handle_t *handle = NULL;
-                    hwc_rect damageRect = {0, 0, 0, 0};
-                    hwc_layer_1_t &layer = contents->hwLayers[i];
-                    if (layer.handle)
-                        handle = private_handle_t::dynamicCast(layer.handle);
-                    getLayerRegion(layer, damageRect, eDamageRegion);
-
-                    if (handle && !isScaled(layer) && !isRotated(layer)
-                            && !(!(damageRect.left) && !(damageRect.top) && !(damageRect.right) && !(damageRect.bottom))) {
-                        HLOGD("[WIN_UPDATE][surfaceDamage]  layer w(%4d) h(%4d),  dirty (%4d, %4d) - (%4d, %4d)",
-                                handle->width, handle->height, damageRect.left, damageRect.top, damageRect.right, damageRect.bottom);
-
-                        currentRect.left   = config[windowIndex].dst.x - (int32_t)layer.sourceCropf.left + damageRect.left;
-                        currentRect.right  = config[windowIndex].dst.x - (int32_t)layer.sourceCropf.left + damageRect.right;
-                        currentRect.top    = config[windowIndex].dst.y - (int32_t)layer.sourceCropf.top  + damageRect.top;
-                        currentRect.bottom = config[windowIndex].dst.y - (int32_t)layer.sourceCropf.top  + damageRect.bottom;
-
-                    }
-                }
-
                 if ((currentRect.left > currentRect.right) || (currentRect.top > currentRect.bottom)) {
                     HLOGD("[WIN_UPDATE] window(%d) layer(%d) invalid region (%4d, %4d) - (%4d, %4d)",
                         i, layerIdx, currentRect.left, currentRect.top, currentRect.right, currentRect.bottom);

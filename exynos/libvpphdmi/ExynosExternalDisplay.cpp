@@ -52,12 +52,7 @@ ExynosExternalDisplay::ExynosExternalDisplay(struct exynos5_hwc_composer_device_
     mXdpi = 0;
     mYdpi = 0;
     mVsyncPeriod = 0;
-    mInternalDMAs.add(IDMA_G3);
-    mReserveMemFd = open(HDMI_RESERVE_MEM_DEV_NAME, O_RDWR);
-    if (mReserveMemFd < 0)
-        ALOGE("Fail to open hdmi_reserve_mem_fd %s, error(%d)", HDMI_RESERVE_MEM_DEV_NAME, mReserveMemFd);
-    else
-        ALOGI("Open %s", HDMI_RESERVE_MEM_DEV_NAME);
+    
 }
 
 ExynosExternalDisplay::~ExynosExternalDisplay()
@@ -241,15 +236,7 @@ int ExynosExternalDisplay::getConfig()
         return -1;
     }
 
-    if (hwcHasApiVersion((hwc_composer_device_1_t*)mHwc, HWC_DEVICE_API_VERSION_1_4) == false)
         mActiveConfigIndex = 0;
-    else {
-        /*
-         * getConfig is called only if cable is connected
-         * mActiveConfigIndex is 0 at this time
-         */
-        mActiveConfigIndex = 0;
-    }
 
     for (int i = 0; i < SUPPORTED_DV_TIMINGS_NUM; i++) {
         dv_timings_index = preset_index_mappings[i].dv_timings_index;
