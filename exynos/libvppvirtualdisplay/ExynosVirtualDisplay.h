@@ -21,7 +21,6 @@ class ExynosVirtualDisplay : public ExynosDisplay {
         ~ExynosVirtualDisplay();
 
         virtual int32_t getDisplayAttributes(const uint32_t attribute);
-        virtual void configureWriteBack(hwc_display_contents_1_t *contents, decon_win_config_data &win_data);
 
         virtual int blank();
         virtual int unblank();
@@ -34,7 +33,6 @@ class ExynosVirtualDisplay : public ExynosDisplay {
         virtual void allocateLayerInfos(hwc_display_contents_1_t* contents);
         virtual void determineYuvOverlay(hwc_display_contents_1_t *contents);
         virtual void determineSupportedOverlays(hwc_display_contents_1_t *contents);
-        virtual void determineBandwidthSupport(hwc_display_contents_1_t *contents);
 
         virtual void init(hwc_display_contents_1_t* contents);
         virtual void deInit();

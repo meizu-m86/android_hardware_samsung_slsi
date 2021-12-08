@@ -247,11 +247,6 @@ void ExynosVirtualDisplay::configureHandle(private_handle_t *handle, size_t inde
 #endif
 }
 
-void ExynosVirtualDisplay::configureWriteBack(hwc_display_contents_1_t __unused *contents,
-        decon_win_config_data __unused &win_data)
-{
-}
-
 int ExynosVirtualDisplay::postFrame(hwc_display_contents_1_t* contents)
 {
 #ifdef USES_VIRTUAL_DISPLAY_DECON_EXT_WB
@@ -265,10 +260,6 @@ int ExynosVirtualDisplay::postFrame(hwc_display_contents_1_t* contents)
     memset(mLastHandles, 0, sizeof(mLastHandles));
     memset(mLastMPPMap, 0, sizeof(mLastMPPMap));
     memset(config, 0, sizeof(win_data.config));
-
-    if (contents->outbuf) {
-        configureWriteBack(contents, win_data);
-    }
 
     for (size_t i = 0; i < NUM_HW_WINDOWS; i++) {
         config[i].fence_fd = -1;
@@ -745,34 +736,6 @@ void ExynosVirtualDisplay::determineSupportedOverlays(hwc_display_contents_1_t *
     }
 
     ExynosDisplay::determineSupportedOverlays(contents);
-}
-
-void ExynosVirtualDisplay::determineBandwidthSupport(hwc_display_contents_1_t *contents)
-{
-    ALOGV("ExynosVirtualDisplay::determineBandwidthSupport");
-
-    if (mDisplayFd < 0) {
-        ALOGE("determineBandwidthSupport, mDisplayFd is invalid , no overlay");
-        return;
-    }
-
-#ifdef USES_VDS_OTHERFORMAT
-    if (!isSupportGLESformat()) {
-        ALOGE("determineBandwidthSupport, GLES format is not suppoted, no overlay");
-        return;
-    }
-#endif
-
-    if (mIsRotationState)
-        return;
-
-    private_handle_t *outBufHandle = private_handle_t::dynamicCast(contents->outbuf);
-    if (outBufHandle == NULL) {
-        ALOGE("determineBandwidthSupport, outbuf is invalid, no overlay");
-        return;
-    }
-
-    ExynosDisplay::determineBandwidthSupport(contents);
 }
 
 #ifdef USES_VDS_BGRA8888
