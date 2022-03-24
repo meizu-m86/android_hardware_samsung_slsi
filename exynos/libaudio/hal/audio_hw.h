@@ -340,14 +340,55 @@ struct route_info {
  **/
 struct audio_device {
     struct audio_hw_device hw_device;
-    pthread_mutex_t lock; /* see note below on mutex acquisition order */
+    pthread_mutex_t lock;// *+ 41 //  adev + 164 /* see note below on mutex acquisition order */
+    audio_mode_t amode; // *+ 42 // adev + 168
+    struct stream_out *out_device; // out_device; // *+ 43 // adev + 172
 
-    audio_mode_t amode;
+    struct stream_in *in_device; // *+ 44 // adev + 176
+    bool mute_state; // adev + 180
+    bool screen_state; // adev + 181
+    bool bt_headset_nrec; // adev + 182
+    bool voice_call_wb; // adev + 183
+
+    bool mic_nr_off; // adev + 184
+
+    bool dumb1; // adev + 185
+    bool dumb2; // adev + 186
+    bool dumb3; // adev + 187
+
+    struct audio_route* audio_route;// *+ 47 // adev + 188
+    struct mixer *mixer;// * +48 // adev + 192
+    struct mixer *hifi_mixer;// * + 49 // adev + 196
+
+    void *a1;// * + 50 // adev + 200
+    void *a2;// * + 51 // adev + 204
+    void *a3;// * + 52 // adev + 208
+    void *a4;// * + 53 // adev + 212
+    void *a5;// * + 54 // adev + 216
+
+    struct pcm *pcm_voice_out;// * + 55 // adev + 220 // VOICE_OUT
+    struct pcm *pcm_voice_in;// * + 56 // adev + 224 // VOICE_IN
+
+    struct pcm *pcm_be_out;// * + 57 // adev + 228 // VOICE_BE_OUT
+    struct pcm *pcm_be_in;// * + 58 // adev + 232 // VOICE_BE_IN
+
+    /* BT-SCO */
+    struct pcm *pcm_btsco_out;// * + 59 // adev + 236      // SCO_OUT
+    struct pcm *pcm_btsco_in;// * + 60 // adev + 240     // SCO_IN
+
+    struct pcm *pcm_pa_out;// * + 61 // adev + 244      // PA_OUT
+    struct pcm *pcm_pa_in;// * + 62 // adev + 248     // PA_IN
+
     audio_usage_mode_t usage_amode;
     call_state_type_t call_state;
     bool screen_off;
+    bool b1;
+    bool b2;
+    bool b3;
 
-    struct stream_out *primary_output;   // Need to know which stream is primary
+    void *a16;
+    int sample_rate; // * + 66 //  adev + 264
+
     struct pcm *pcm_capture;             // Capture PCM Device is unique
 
     struct route_info *rinfo;
@@ -358,14 +399,12 @@ struct audio_device {
 
     /* Voice */
     struct voice_manager *voice;
-    struct pcm *pcm_voice_rx;      // PCM Device for Voice Capture
-    struct pcm *pcm_voice_tx;      // PCM Device for Voice Playback
     float voice_volume;
 
-    /* BT-SCO */
-    struct pcm *pcm_btsco_in;      // PCM Device for bt-sco Capture
-    struct pcm *pcm_btsco_out;     // PCM Device for bt-sco Playback
+   
+    bool is_oversea; // adev + 304
 
+    void *a17;
     /* Visualizer Library Link */
     void *offload_visualizer_lib;
     int (*notify_start_output_tovisualizer)(audio_io_handle_t);

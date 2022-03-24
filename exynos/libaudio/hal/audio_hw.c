@@ -3418,7 +3418,7 @@ static int adev_open(
     }
 
     /* Allocate memory for Structure audio_device */
-    adev = calloc(1, sizeof(struct audio_device));
+    adev = calloc(1, sizeof(struct audio_device));//size : 0x140 -> 320 
     if (!adev) {
         ALOGE("device-%s: Fail to allocate memory for audio_device", __func__);
         return -ENOMEM;
