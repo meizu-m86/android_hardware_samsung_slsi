@@ -338,7 +338,7 @@ struct route_info {
  ** Structure for Audio Primary HW Module
  ** Implement audio_hw_device structure
  **/
-struct audio_device {
+struct audio_device { // size : 0x140u -> 320
     struct audio_hw_device hw_device;
     pthread_mutex_t lock;// *+ 41 //  adev + 164 /* see note below on mutex acquisition order */
     audio_mode_t amode; // *+ 42 // adev + 168
@@ -351,20 +351,19 @@ struct audio_device {
     bool voice_call_wb; // adev + 183
 
     bool mic_nr_off; // adev + 184
-
-    bool dumb1; // adev + 185
-    bool dumb2; // adev + 186
-    bool dumb3; // adev + 187
+    bool b_185; // adev + 185
+    bool b_186; // adev + 186
+    bool b_187; // adev + 187
 
     struct audio_route* audio_route;// *+ 47 // adev + 188
     struct mixer *mixer;// * +48 // adev + 192
     struct mixer *hifi_mixer;// * + 49 // adev + 196
 
-    void *a1;// * + 50 // adev + 200
-    void *a2;// * + 51 // adev + 204
-    void *a3;// * + 52 // adev + 208
-    void *a4;// * + 53 // adev + 212
-    void *a5;// * + 54 // adev + 216
+    void *v_50;// * + 50 // adev + 200
+    void *v_51;// * + 51 // adev + 204
+    void *v_52;// * + 52 // adev + 208
+    void *v_53;// * + 53 // adev + 212
+    void *v_54;// * + 54 // adev + 216
 
     struct pcm *pcm_voice_out;// * + 55 // adev + 220 // VOICE_OUT
     struct pcm *pcm_voice_in;// * + 56 // adev + 224 // VOICE_IN
@@ -379,36 +378,47 @@ struct audio_device {
     struct pcm *pcm_pa_out;// * + 61 // adev + 244      // PA_OUT
     struct pcm *pcm_pa_in;// * + 62 // adev + 248     // PA_IN
 
-    audio_usage_mode_t usage_amode;
-    call_state_type_t call_state;
-    bool screen_off;
-    bool b1;
-    bool b2;
-    bool b3;
+    void *v_63;      // * + 63 // adev + 252 
+    void *v_64;      // * + 64 // adev + 256 
 
-    void *a16;
+    bool tfa_power_state; // adev + 260
+    bool mute_state; // adev + 261
+    bool b_262; // adev + 262
+    bool b_263; // adev + 263
+    
     int sample_rate; // * + 66 //  adev + 264
+    
+    bool b_268; // * + 67 // adev + 268
+    bool output_stream_state; // adev + 269
+    bool b_270;  // adev + 270
+    bool b_271;  // adev + 271
 
-    struct pcm *pcm_capture;             // Capture PCM Device is unique
+    int headset_volume;      // * + 68 // adev + 272 
+    int headphone_volume;    // * + 69 // adev + 276
+    void *v_70;      // * + 70 // adev + 280
+    void *v_71;      // * + 71 // adev + 284
 
-    struct route_info *rinfo;
-    struct mixer *mixerinfo;             // For Volume control & Mute
-    struct mixer_ctl * vol_ctrl;
-
-    struct listnode audio_usage_list;
-
-    /* Voice */
-    struct voice_manager *voice;
-    float voice_volume;
-
-   
-    bool is_oversea; // adev + 304
-
-    void *a17;
-    /* Visualizer Library Link */
-    void *offload_visualizer_lib;
-    int (*notify_start_output_tovisualizer)(audio_io_handle_t);
-    int (*notify_stop_output_tovisualizer)(audio_io_handle_t);
+    bool hifi_state; // * + 72 // adev + 288
+    bool b_289; //  adev + 289
+    bool b_290; // adev + 290
+    bool b_291; // adev + 291
+    
+    int hifi_gain_state; // * + 73 // adev + 292
+    int hifi_gain; // * + 74 // adev + 296
+    int hifi_volume; // * + 75 // adev + 300
+    
+    bool is_oversea; // * + 76 // adev + 304
+    bool b_305; // adev + 305
+    bool b_306; // adev + 306
+    bool b_307; // adev + 307
+    
+    int hifi_impedance; // * + 77 // adev + 308
+    bool messagerecord_state; // * + 78 // adev + 312
+    bool asr_ready; // adev + 313
+    bool b_314; // adev + 314
+    bool b_315; // adev + 315
+    
+    void *v_79; // * + 79 // adev + 316
 };
 
 #define MAX_PATH_NAME_LEN 50
