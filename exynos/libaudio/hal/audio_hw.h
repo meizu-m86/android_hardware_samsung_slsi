@@ -345,7 +345,7 @@ struct audio_device { // size : 0x140u -> 320
     struct stream_out *out_device; // out_device; // *+ 43 // adev + 172
 
     struct stream_in *in_device; // *+ 44 // adev + 176
-    bool mute_state; // adev + 180
+    bool mic_mute_state; // adev + 180
     bool screen_state; // adev + 181
     bool bt_headset_nrec; // adev + 182
     bool voice_call_wb; // adev + 183
