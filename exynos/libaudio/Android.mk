@@ -25,4 +25,35 @@
 
 LOCAL_PATH := $(call my-dir)
 
-include $(call all-makefiles-under,$(LOCAL_PATH))
+# include $(call all-makefiles-under,$(LOCAL_PATH))
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+	audio_hw.c
+
+LOCAL_C_INCLUDES += \
+	external/tinyalsa/include \
+	external/tinycompress/include \
+	external/kernel-headers/original/uapi/sound \
+	$(call include-path-for, audio-route) \
+	$(call include-path-for, audio-utils) \
+	external/expat/lib
+
+
+LOCAL_SHARED_LIBRARIES := \
+	liblog \
+	libcutils \
+	libtinyalsa \
+	libtinycompress \
+	libaudioroute \
+	libaudioutils \
+	libdl \
+	libexpat
+
+LOCAL_MODULE := audio.primary.m86
+LOCAL_MODULE_RELATIVE_PATH := hw
+
+LOCAL_MODULE_TAGS := optional
+
+include $(BUILD_SHARED_LIBRARY)
