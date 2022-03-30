@@ -32,18 +32,140 @@
 struct stream_out;
 struct stream_in;
 
+// size : 0x140 -> 320
 struct audio_device {
     struct audio_hw_device device;
+    pthread_mutex_t lock;// *+ 41 //  adev + 164 /* see note below on mutex acquisition order */
+    audio_mode_t amode; // *+ 42 // adev + 168
+    struct stream_out *out_device; // out_device; // *+ 43 // adev + 172
+
+    struct stream_in *in_device; // *+ 44 // adev + 176
+    bool mic_mute_state; // adev + 180
+    bool screen_state; // adev + 181
+    bool bt_headset_nrec; // adev + 182
+    bool voice_call_wb; // adev + 183
+
+    bool mic_nr_off; // adev + 184
+    bool b_185; // adev + 185
+    bool b_186; // adev + 186
+    bool b_187; // adev + 187
+
+    struct audio_route* audio_route;// *+ 47 // adev + 188
+    struct mixer *mixer;// * +48 // adev + 192
+    struct mixer *hifi_mixer;// * + 49 // adev + 196
+
+    void *v_50;// * + 50 // adev + 200
+    void *v_51;// * + 51 // adev + 204
+    void *v_52;// * + 52 // adev + 208
+    void *v_53;// * + 53 // adev + 212
+    void *v_54;// * + 54 // adev + 216
+
+    struct pcm *pcm_voice_out;// * + 55 // adev + 220 // VOICE_OUT
+    struct pcm *pcm_voice_in;// * + 56 // adev + 224 // VOICE_IN
+
+    struct pcm *pcm_be_out;// * + 57 // adev + 228 // VOICE_BE_OUT
+    struct pcm *pcm_be_in;// * + 58 // adev + 232 // VOICE_BE_IN
+
+    /* BT-SCO */
+    struct pcm *pcm_btsco_out;// * + 59 // adev + 236      // SCO_OUT
+    struct pcm *pcm_btsco_in;// * + 60 // adev + 240     // SCO_IN
+
+    struct pcm *pcm_pa_out;// * + 61 // adev + 244      // PA_OUT
+    struct pcm *pcm_pa_in;// * + 62 // adev + 248     // PA_IN
+
+    void *v_63;      // * + 63 // adev + 252
+    struct audio_stream_out **stream_out;      // * + 64 // adev + 256
+
+    bool tfa_power_state; // adev + 260
+    bool mute_state; // adev + 261
+    bool b_262; // adev + 262
+    bool b_263; // adev + 263
+
+    int sample_rate; // * + 66 //  adev + 264
+
+    bool b_268; // * + 67 // adev + 268
+    bool output_stream_state; // adev + 269
+    bool b_270;  // adev + 270
+    bool b_271;  // adev + 271
+
+    int headset_volume;      // * + 68 // adev + 272
+    int headphone_volume;    // * + 69 // adev + 276
+    void *v_70;      // * + 70 // adev + 280
+    void *v_71;      // * + 71 // adev + 284
+
+    bool hifi_state; // * + 72 // adev + 288
+    bool b_289; //  adev + 289
+    bool b_290; // adev + 290
+    bool b_291; // adev + 291
+
+    int hifi_gain_state; // * + 73 // adev + 292
+    int hifi_gain; // * + 74 // adev + 296
+    int hifi_volume; // * + 75 // adev + 300
+
+    bool is_oversea; // * + 76 // adev + 304
+    bool b_305; // adev + 305
+    bool b_306; // adev + 306
+    bool b_307; // adev + 307
+
+    int hifi_impedance; // * + 77 // adev + 308
+    bool messagerecord_state; // * + 78 // adev + 312
+    bool asr_ready; // adev + 313
+    bool b_314; // adev + 314
+    bool b_315; // adev + 315
+
+    void *v_79; // * + 79 // adev + 316
 };
 
+// size : 0xD8 -> 216
 struct stream_out {
     struct audio_stream_out stream;
     int64_t last_write_time_us;
+    pthread_mutex_t lock; // *out + 25  // out + 100
+
+    void *v_104; // *out + 26 // out + 104
+    void *v_108; // *out + 27 // out + 108
+    void *v_112; // *out + 28 // out + 112
+    void *v_116; // *out + 29 // out + 116
+
+    void *v_120; // *out + 30 // out + 120
+    void *v_124; // *out + 31 // out + 124
+    void *v_128; // *out + 32 // out + 128
+    void *v_132; // *out + 33 // out + 132
+
+    void *v_136; // *out + 34 // out + 136
+    void *v_140; // *out + 35 // out + 140
+    void *v_144; // *out + 36 // out + 144
+    void *v_148; // *out + 37 // out + 148
+
+    void *v_152; // *out + 38 // out + 152
+    void *v_156; // *out + 39 // out + 156
+    void *v_160; // *out + 40 // out + 160
+    void *v_164; // *out + 41 // out + 164
+
+    void *v_168; // *out + 42 // out + 168
+    void *v_172; // *out + 43 // out + 172
+    void *v_176; // *out + 44 // out + 176
+    void *v_180; // *out + 45 // out + 180
+
+    int sample_rate; // *out + 46 // out + 184
+    audio_format_t format; // *out + 47 // out + 188
+    void *v_192; // *out + 48 // out + 192
+    void *v_196; // *out + 49 // out + 196
+    void *v_200; // *out + 50 // out + 200
+
+    struct audio_device *adev; // *out + 51 // out + 204
+    void *v_208; // *out + 52 // out + 208
+    void *v_212; // *out + 53 // out + 212
 };
 
+// size : 0xB0 -> 176
 struct stream_in {
     struct audio_stream_in stream;
     int64_t last_read_time_us;
+    pthread_mutex_t lock;// *in + 29  //  in + 116
+
+
+    struct audio_device *adev; // *in + 43 // out + 172
 };
 
 static uint32_t out_get_sample_rate(const struct audio_stream *stream)
