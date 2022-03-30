@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "audio_hw_default"
+#define LOG_TAG "audio_hw_m86"
 //#define LOG_NDEBUG 0
 
 #include <errno.h>
@@ -29,16 +29,19 @@
 #include <system/audio.h>
 #include <hardware/audio.h>
 
-struct stub_audio_device {
+struct stream_out;
+struct stream_in;
+
+struct audio_device {
     struct audio_hw_device device;
 };
 
-struct stub_stream_out {
+struct stream_out {
     struct audio_stream_out stream;
     int64_t last_write_time_us;
 };
 
-struct stub_stream_in {
+struct stream_in {
     struct audio_stream_in stream;
     int64_t last_read_time_us;
 };
@@ -122,7 +125,7 @@ static ssize_t out_write(struct audio_stream_out *stream, const void* buffer,
     ALOGV("out_write: bytes: %d", bytes);
 
     /* XXX: fake timing for audio output */
-    struct stub_stream_out *out = (struct stub_stream_out *)stream;
+    struct stream_out *out = (struct stream_out *)stream;
     struct timespec t = { .tv_sec = 0, .tv_nsec = 0 };
     clock_gettime(CLOCK_MONOTONIC, &t);
     const int64_t now = (t.tv_sec * 1000000000LL + t.tv_nsec) / 1000;
@@ -213,7 +216,7 @@ static int in_set_format(struct audio_stream *stream, audio_format_t format)
 
 static int in_standby(struct audio_stream *stream)
 {
-    struct stub_stream_in *in = (struct stub_stream_in *)stream;
+    struct stream_in *in = (struct stream_in *)stream;
     in->last_read_time_us = 0;
     return 0;
 }
@@ -245,7 +248,7 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
     ALOGV("in_read: bytes %d", bytes);
 
     /* XXX: fake timing for audio input */
-    struct stub_stream_in *in = (struct stub_stream_in *)stream;
+    struct stream_in *in = (struct stream_in *)stream;
     struct timespec t = { .tv_sec = 0, .tv_nsec = 0 };
     clock_gettime(CLOCK_MONOTONIC, &t);
     const int64_t now = (t.tv_sec * 1000000000LL + t.tv_nsec) / 1000;
@@ -297,11 +300,11 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
 {
     ALOGV("adev_open_output_stream...");
 
-    struct stub_audio_device *ladev = (struct stub_audio_device *)dev;
-    struct stub_stream_out *out;
+    struct audio_device *ladev = (struct audio_device *)dev;
+    struct stream_out *out;
     int ret;
 
-    out = (struct stub_stream_out *)calloc(1, sizeof(struct stub_stream_out));
+    out = (struct stream_out *)calloc(1, sizeof(struct stream_out));
     if (!out)
         return -ENOMEM;
 
@@ -424,11 +427,11 @@ static int adev_open_input_stream(struct audio_hw_device *dev,
 {
     ALOGV("adev_open_input_stream...");
 
-    struct stub_audio_device *ladev = (struct stub_audio_device *)dev;
-    struct stub_stream_in *in;
+    struct audio_device *ladev = (struct audio_device *)dev;
+    struct stream_in *in;
     int ret;
 
-    in = (struct stub_stream_in *)calloc(1, sizeof(struct stub_stream_in));
+    in = (struct stream_in *)calloc(1, sizeof(struct stream_in));
     if (!in)
         return -ENOMEM;
 
@@ -482,13 +485,13 @@ static int adev_open(const hw_module_t* module, const char* name,
 {
     ALOGV("adev_open: %s", name);
 
-    struct stub_audio_device *adev;
+    struct audio_device *adev;
     int ret;
 
     if (strcmp(name, AUDIO_HARDWARE_INTERFACE) != 0)
         return -EINVAL;
 
-    adev = calloc(1, sizeof(struct stub_audio_device));
+    adev = calloc(1, sizeof(struct audio_device));
     if (!adev)
         return -ENOMEM;
 
@@ -530,7 +533,7 @@ struct audio_module HAL_MODULE_INFO_SYM = {
         .module_api_version = AUDIO_MODULE_API_VERSION_0_1,
         .hal_api_version = HARDWARE_HAL_API_VERSION,
         .id = AUDIO_HARDWARE_MODULE_ID,
-        .name = "Default audio HW HAL",
+        .name = "m86 audio HW HAL",
         .author = "The Android Open Source Project",
         .methods = &hal_module_methods,
     },
