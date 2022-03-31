@@ -49,7 +49,8 @@ LOCAL_SHARED_LIBRARIES := \
 	libaudioroute \
 	libaudioutils \
 	libdl \
-	libexpat
+	libexpat \
+	libtfa9890
 
 LOCAL_MODULE := audio.primary.m86
 LOCAL_MODULE_RELATIVE_PATH := hw

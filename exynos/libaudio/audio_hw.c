@@ -29,6 +29,13 @@
 #include <system/audio.h>
 #include <hardware/audio.h>
 
+#include <audio_route/audio_route.h>
+
+/* PCM Interface of ALSA & Compress Offload Interface */
+#include <tinyalsa/asoundlib.h>
+#include <tinycompress/tinycompress.h>
+#include <compress_params.h>
+
 struct stream_out;
 struct stream_in;
 
@@ -119,7 +126,6 @@ struct audio_device {
 // size : 0xD8 -> 216
 struct stream_out {
     struct audio_stream_out stream;
-    int64_t last_write_time_us;
     pthread_mutex_t lock; // *out + 25  // out + 100
 
     void *v_104; // *out + 26 // out + 104
@@ -161,12 +167,14 @@ struct stream_out {
 // size : 0xB0 -> 176
 struct stream_in {
     struct audio_stream_in stream;
-    int64_t last_read_time_us;
     pthread_mutex_t lock;// *in + 29  //  in + 116
 
 
     struct audio_device *adev; // *in + 43 // out + 172
 };
+
+// Tfa98xx fun
+extern int NxpTfa98xx_Stop();
 
 static uint32_t out_get_sample_rate(const struct audio_stream *stream)
 {
@@ -206,7 +214,6 @@ static int out_set_format(struct audio_stream *stream, audio_format_t format)
 static int out_standby(struct audio_stream *stream)
 {
     ALOGV("out_standby");
-    // out->last_write_time_us = 0; unnecessary as a stale write time has same effect
     return 0;
 }
 
@@ -246,30 +253,8 @@ static ssize_t out_write(struct audio_stream_out *stream, const void* buffer,
 {
     ALOGV("out_write: bytes: %d", bytes);
 
-    /* XXX: fake timing for audio output */
     struct stream_out *out = (struct stream_out *)stream;
-    struct timespec t = { .tv_sec = 0, .tv_nsec = 0 };
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    const int64_t now = (t.tv_sec * 1000000000LL + t.tv_nsec) / 1000;
-    const int64_t elapsed_time_since_last_write = now - out->last_write_time_us;
-    int64_t sleep_time = bytes * 1000000LL / audio_stream_out_frame_size(stream) /
-               out_get_sample_rate(&stream->common) - elapsed_time_since_last_write;
-    if (sleep_time > 0) {
-        usleep(sleep_time);
-    } else {
-        // we don't sleep when we exit standby (this is typical for a real alsa buffer).
-        sleep_time = 0;
-    }
-    out->last_write_time_us = now + sleep_time;
-    // last_write_time_us is an approximation of when the (simulated) alsa
-    // buffer is believed completely full. The usleep above waits for more space
-    // in the buffer, but by the end of the sleep the buffer is considered
-    // topped-off.
-    //
-    // On the subsequent out_write(), we measure the elapsed time spent in
-    // the mixer. This is subtracted from the sleep estimate based on frames,
-    // thereby accounting for drain in the alsa buffer during mixing.
-    // This is a crude approximation; we don't handle underruns precisely.
+    
     return bytes;
 }
 
@@ -339,7 +324,6 @@ static int in_set_format(struct audio_stream *stream, audio_format_t format)
 static int in_standby(struct audio_stream *stream)
 {
     struct stream_in *in = (struct stream_in *)stream;
-    in->last_read_time_us = 0;
     return 0;
 }
 
@@ -369,31 +353,7 @@ static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
 {
     ALOGV("in_read: bytes %d", bytes);
 
-    /* XXX: fake timing for audio input */
     struct stream_in *in = (struct stream_in *)stream;
-    struct timespec t = { .tv_sec = 0, .tv_nsec = 0 };
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    const int64_t now = (t.tv_sec * 1000000000LL + t.tv_nsec) / 1000;
-
-    // we do a full sleep when exiting standby.
-    const bool standby = in->last_read_time_us == 0;
-    const int64_t elapsed_time_since_last_read = standby ?
-            0 : now - in->last_read_time_us;
-    int64_t sleep_time = bytes * 1000000LL / audio_stream_in_frame_size(stream) /
-            in_get_sample_rate(&stream->common) - elapsed_time_since_last_read;
-    if (sleep_time > 0) {
-        usleep(sleep_time);
-    } else {
-        sleep_time = 0;
-    }
-    in->last_read_time_us = now + sleep_time;
-    // last_read_time_us is an approximation of when the (simulated) alsa
-    // buffer is drained by the read, and is empty.
-    //
-    // On the subsequent in_read(), we measure the elapsed time spent in
-    // the recording thread. This is subtracted from the sleep estimate based on frames,
-    // thereby accounting for fill in the alsa buffer during the interim.
-    memset(buffer, 0, bytes);
     return bytes;
 }
 
@@ -598,6 +558,11 @@ static int adev_dump(const audio_hw_device_t *device, int fd)
 static int adev_close(hw_device_t *device)
 {
     ALOGV("adev_close");
+    struct audio_device *adev = (struct audio_device *)device;
+    NxpTfa98xx_Stop();
+    mixer_close(adev->mixer);
+    mixer_close(adev->hifi_mixer);
+    audio_route_free(adev->audio_route);
     free(device);
     return 0;
 }
