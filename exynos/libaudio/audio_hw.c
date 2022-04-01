@@ -44,9 +44,9 @@ struct audio_device {
     struct audio_hw_device device;
     pthread_mutex_t lock;// *+ 41 //  adev + 164 /* see note below on mutex acquisition order */
     audio_mode_t amode; // *+ 42 // adev + 168
-    struct stream_out *out_device; // out_device; // *+ 43 // adev + 172
-
-    struct stream_in *in_device; // *+ 44 // adev + 176
+    audio_devices_t out_device; // out_device; // *+ 43 // adev + 172
+    // audio_devices_t :/system/media/audio/include/system/audio.h  844: typedef uint32_t audio_devices_t;
+    audio_devices_t in_device; // *+ 44 // adev + 176
     bool mic_mute_state; // adev + 180
     bool screen_state; // adev + 181
     bool bt_headset_nrec; // adev + 182
