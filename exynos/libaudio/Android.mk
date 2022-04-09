@@ -50,7 +50,8 @@ LOCAL_SHARED_LIBRARIES := \
 	libaudioutils \
 	libdl \
 	libexpat \
-	libtfa9890
+	libtfa9890 \
+	libsitril-audio
 
 LOCAL_MODULE := audio.primary.m86
 LOCAL_MODULE_RELATIVE_PATH := hw

@@ -37,6 +37,31 @@
 #include <tinycompress/tinycompress.h>
 #include <compress_params.h>
 
+
+enum {
+    OUT_DEVICE_SPEAKER,
+    OUT_DEVICE_HEADSET,
+    OUT_DEVICE_HEADPHONES,
+    OUT_DEVICE_BT_SCO,
+    OUT_DEVICE_SPEAKER_AND_HEADSET,
+    OUT_DEVICE_OFF,
+    OUT_DEVICE_TAB_SIZE,           /* number of rows in route_configs[][] */
+    OUT_DEVICE_NONE,
+    OUT_DEVICE_CNT
+};
+
+enum {
+    IN_SOURCE_MIC,
+    IN_SOURCE_CAMCORDER,
+    IN_SOURCE_VOICE_RECOGNITION,
+    IN_SOURCE_VOICE_COMMUNICATION,
+    IN_SOURCE_OFF,
+    IN_SOURCE_TAB_SIZE,            /* number of lines in route_configs[][] */
+    IN_SOURCE_NONE,
+    IN_SOURCE_CNT
+};
+
+
 struct stream_out;
 struct stream_in;
 

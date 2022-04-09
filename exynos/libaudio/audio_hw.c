@@ -106,75 +106,75 @@ static uint32_t out_get_sample_rate(const struct audio_stream *stream)
 
 static int out_set_sample_rate(struct audio_stream *stream, uint32_t rate)
 {
-    ALOGV("out_set_sample_rate: %d", 0);
+    ALOGE("out_set_sample_rate: %d", 0);
     return -ENOSYS;
 }
 
 static size_t out_get_buffer_size(const struct audio_stream *stream)
 {
-    ALOGV("out_get_buffer_size: %d", 4096);
+    ALOGE("out_get_buffer_size: %d", 4096);
     return 4096;
 }
 
 static audio_channel_mask_t out_get_channels(const struct audio_stream *stream)
 {
-    ALOGV("out_get_channels");
+    ALOGE("out_get_channels");
     return AUDIO_CHANNEL_OUT_STEREO;
 }
 
 static audio_format_t out_get_format(const struct audio_stream *stream)
 {
-    ALOGV("out_get_format");
+    ALOGE("out_get_format");
     return AUDIO_FORMAT_PCM_16_BIT;
 }
 
 static int out_set_format(struct audio_stream *stream, audio_format_t format)
 {
-    ALOGV("out_set_format: %d",format);
+    ALOGE("out_set_format: %d",format);
     return -ENOSYS;
 }
 
 static int out_standby(struct audio_stream *stream)
 {
-    ALOGV("out_standby");
+    ALOGE("out_standby");
     return 0;
 }
 
 static int out_dump(const struct audio_stream *stream, int fd)
 {
-    ALOGV("out_dump");
+    ALOGE("out_dump");
     return 0;
 }
 
 static int out_set_parameters(struct audio_stream *stream, const char *kvpairs)
 {
-    ALOGV("out_set_parameters");
+    ALOGE("out_set_parameters");
     return 0;
 }
 
 static char * out_get_parameters(const struct audio_stream *stream, const char *keys)
 {
-    ALOGV("out_get_parameters");
+    ALOGE("out_get_parameters");
     return strdup("");
 }
 
 static uint32_t out_get_latency(const struct audio_stream_out *stream)
 {
-    ALOGV("out_get_latency");
+    ALOGE("out_get_latency");
     return 0;
 }
 
 static int out_set_volume(struct audio_stream_out *stream, float left,
                           float right)
 {
-    ALOGV("out_set_volume: Left:%f Right:%f", left, right);
+    ALOGE("out_set_volume: Left:%f Right:%f", left, right);
     return 0;
 }
 
 static ssize_t out_write(struct audio_stream_out *stream, const void* buffer,
                          size_t bytes)
 {
-    ALOGV("out_write: bytes: %d", bytes);
+    ALOGE("out_write: bytes: %d", bytes);
 
     struct stream_out *out = (struct stream_out *)stream;
     
@@ -185,19 +185,19 @@ static int out_get_render_position(const struct audio_stream_out *stream,
                                    uint32_t *dsp_frames)
 {
     *dsp_frames = 0;
-    ALOGV("out_get_render_position: dsp_frames: %p", dsp_frames);
+    ALOGE("out_get_render_position: dsp_frames: %p", dsp_frames);
     return -EINVAL;
 }
 
 static int out_add_audio_effect(const struct audio_stream *stream, effect_handle_t effect)
 {
-    ALOGV("out_add_audio_effect: %p", effect);
+    ALOGE("out_add_audio_effect: %p", effect);
     return 0;
 }
 
 static int out_remove_audio_effect(const struct audio_stream *stream, effect_handle_t effect)
 {
-    ALOGV("out_remove_audio_effect: %p", effect);
+    ALOGE("out_remove_audio_effect: %p", effect);
     return 0;
 }
 
@@ -205,32 +205,32 @@ static int out_get_next_write_timestamp(const struct audio_stream_out *stream,
                                         int64_t *timestamp)
 {
     *timestamp = 0;
-    ALOGV("out_get_next_write_timestamp: %ld", (long int)(*timestamp));
+    ALOGE("out_get_next_write_timestamp: %ld", (long int)(*timestamp));
     return -EINVAL;
 }
 
 /** audio_stream_in implementation **/
 static uint32_t in_get_sample_rate(const struct audio_stream *stream)
 {
-    ALOGV("in_get_sample_rate");
+    ALOGE("in_get_sample_rate");
     return 8000;
 }
 
 static int in_set_sample_rate(struct audio_stream *stream, uint32_t rate)
 {
-    ALOGV("in_set_sample_rate: %d", rate);
+    ALOGE("in_set_sample_rate: %d", rate);
     return -ENOSYS;
 }
 
 static size_t in_get_buffer_size(const struct audio_stream *stream)
 {
-    ALOGV("in_get_buffer_size: %d", 320);
+    ALOGE("in_get_buffer_size: %d", 320);
     return 320;
 }
 
 static audio_channel_mask_t in_get_channels(const struct audio_stream *stream)
 {
-    ALOGV("in_get_channels: %d", AUDIO_CHANNEL_IN_MONO);
+    ALOGE("in_get_channels: %d", AUDIO_CHANNEL_IN_MONO);
     return AUDIO_CHANNEL_IN_MONO;
 }
 
@@ -274,7 +274,7 @@ static int in_set_gain(struct audio_stream_in *stream, float gain)
 static ssize_t in_read(struct audio_stream_in *stream, void* buffer,
                        size_t bytes)
 {
-    ALOGV("in_read: bytes %d", bytes);
+    ALOGE("in_read: bytes %d", bytes);
 
     struct stream_in *in = (struct stream_in *)stream;
     return bytes;
@@ -303,7 +303,7 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
                                    struct audio_stream_out **stream_out,
                                    const char *address __unused)
 {
-    ALOGV("adev_open_output_stream...");
+    ALOGE("adev_open_output_stream...");
 
     struct audio_device *ladev = (struct audio_device *)dev;
     struct stream_out *out;
@@ -343,81 +343,81 @@ err_open:
 static void adev_close_output_stream(struct audio_hw_device *dev,
                                      struct audio_stream_out *stream)
 {
-    ALOGV("adev_close_output_stream...");
+    ALOGE("adev_close_output_stream...");
     free(stream);
 }
 
 static int adev_set_parameters(struct audio_hw_device *dev, const char *kvpairs)
 {
-    ALOGV("adev_set_parameters");
+    ALOGE("adev_set_parameters");
     return -ENOSYS;
 }
 
 static char * adev_get_parameters(const struct audio_hw_device *dev,
                                   const char *keys)
 {
-    ALOGV("adev_get_parameters");
+    ALOGE("adev_get_parameters");
     return strdup("");
 }
 
 static int adev_init_check(const struct audio_hw_device *dev)
 {
-    ALOGV("adev_init_check");
+    ALOGE("adev_init_check");
     return 0;
 }
 
 static int adev_set_voice_volume(struct audio_hw_device *dev, float volume)
 {
-    ALOGV("adev_set_voice_volume: %f", volume);
+    ALOGE("adev_set_voice_volume: %f", volume);
     return -ENOSYS;
 }
 
 static int adev_set_master_volume(struct audio_hw_device *dev, float volume)
 {
-    ALOGV("adev_set_master_volume: %f", volume);
+    ALOGE("adev_set_master_volume: %f", volume);
     return -ENOSYS;
 }
 
 static int adev_get_master_volume(struct audio_hw_device *dev, float *volume)
 {
-    ALOGV("adev_get_master_volume: %f", *volume);
+    ALOGE("adev_get_master_volume: %f", *volume);
     return -ENOSYS;
 }
 
 static int adev_set_master_mute(struct audio_hw_device *dev, bool muted)
 {
-    ALOGV("adev_set_master_mute: %d", muted);
+    ALOGE("adev_set_master_mute: %d", muted);
     return -ENOSYS;
 }
 
 static int adev_get_master_mute(struct audio_hw_device *dev, bool *muted)
 {
-    ALOGV("adev_get_master_mute: %d", *muted);
+    ALOGE("adev_get_master_mute: %d", *muted);
     return -ENOSYS;
 }
 
 static int adev_set_mode(struct audio_hw_device *dev, audio_mode_t mode)
 {
-    ALOGV("adev_set_mode: %d", mode);
+    ALOGE("adev_set_mode: %d", mode);
     return 0;
 }
 
 static int adev_set_mic_mute(struct audio_hw_device *dev, bool state)
 {
-    ALOGV("adev_set_mic_mute: %d",state);
+    ALOGE("adev_set_mic_mute: %d",state);
     return -ENOSYS;
 }
 
 static int adev_get_mic_mute(const struct audio_hw_device *dev, bool *state)
 {
-    ALOGV("adev_get_mic_mute");
+    ALOGE("adev_get_mic_mute");
     return -ENOSYS;
 }
 
 static size_t adev_get_input_buffer_size(const struct audio_hw_device *dev,
                                          const struct audio_config *config)
 {
-    ALOGV("adev_get_input_buffer_size: %d", 320);
+    ALOGE("adev_get_input_buffer_size: %d", 320);
     return 320;
 }
 
@@ -430,7 +430,7 @@ static int adev_open_input_stream(struct audio_hw_device *dev,
                                   const char *address __unused,
                                   audio_source_t source __unused)
 {
-    ALOGV("adev_open_input_stream...");
+    ALOGE("adev_open_input_stream...");
 
     struct audio_device *ladev = (struct audio_device *)dev;
     struct stream_in *in;
@@ -468,19 +468,19 @@ err_open:
 static void adev_close_input_stream(struct audio_hw_device *dev,
                                    struct audio_stream_in *in)
 {
-    ALOGV("adev_close_input_stream...");
+    ALOGE("adev_close_input_stream...");
     return;
 }
 
 static int adev_dump(const audio_hw_device_t *device, int fd)
 {
-    ALOGV("adev_dump");
+    ALOGE("adev_dump");
     return 0;
 }
 
 static int adev_close(hw_device_t *device)
 {
-    ALOGV("adev_close");
+    ALOGE("adev_close");
     struct audio_device *adev = (struct audio_device *)device;
     NxpTfa98xx_Stop();
     mixer_close(adev->mixer);
@@ -493,7 +493,7 @@ static int adev_close(hw_device_t *device)
 static int adev_open(const hw_module_t* module, const char* name,
                      hw_device_t** device)
 {
-    ALOGV("adev_open: %s", name);
+    ALOGE("adev_open: %s", name);
 
     struct audio_device *adev;
     int ret;
@@ -530,6 +530,46 @@ static int adev_open(const hw_module_t* module, const char* name,
 
     *device = &adev->device.common;
 
+    struct audio_route* audio_route = audio_route_init(0, "/system/etc/mixer_paths.xml");
+    adev->audio_route = audio_route;
+    if ( audio_route == NULL )
+    {
+        ALOGE("%s(): failed to open audio route, abort...", __func__);
+        free(adev);
+        return -12;
+    }
+
+    struct mixer *mixer = mixer_open(0);
+    if ( mixer == NULL )
+    {
+        ALOGE("%s(): failed to open mixer, abort...", __func__);
+        audio_route_free(adev->audio_route);
+        free(adev);
+        return -12;
+    }
+    adev->mixer = mixer;
+
+    struct mixer *hifi_mixer = mixer_open(1);
+    if ( hifi_mixer == NULL )
+    {
+        ALOGE("%s(): failed to open HiFi mixer, abort...", __func__);
+        mixer_close(adev->mixer);
+        audio_route_free(adev->audio_route);
+        free(adev);
+        return -12;
+    }
+    adev->hifi_mixer = hifi_mixer;
+
+
+    Open();
+    char region[128];
+    char language[128];
+    property_get("ro.product.locale.region", region, "0");
+    property_get("ro.product.locale.language", language, "0");
+    ALOGE("%s:region=%s,language=%s", __func__, region, language);
+    bool is_oversea = strcmp(region, "CN") || strcmp(language, "zh");
+    adev->is_oversea = is_oversea;
+    ALOGE("%s:is_oversea=%d", __func__, adev->is_oversea);
     return 0;
 }
 
