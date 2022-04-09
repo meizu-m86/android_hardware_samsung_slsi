@@ -19,6 +19,86 @@
 
 #include "audio_hw.h"
 
+/**
+ * @brief get_output_device_id
+ *
+ * @param device
+ *
+ * @returns
+ */
+int get_output_device_id(audio_devices_t device)
+{
+    if (device == AUDIO_DEVICE_NONE)
+        return OUT_DEVICE_NONE;
+
+    if (popcount(device) == 2) {
+        if ((device == (AUDIO_DEVICE_OUT_SPEAKER |
+                        AUDIO_DEVICE_OUT_WIRED_HEADSET)) ||
+                (device == (AUDIO_DEVICE_OUT_SPEAKER |
+                            AUDIO_DEVICE_OUT_WIRED_HEADPHONE)))
+            return OUT_DEVICE_SPEAKER_AND_HEADSET;
+        else
+            return OUT_DEVICE_NONE;
+    }
+
+    if (popcount(device) != 1)
+        return OUT_DEVICE_NONE;
+
+    switch (device) {
+    case AUDIO_DEVICE_OUT_SPEAKER:
+        return OUT_DEVICE_SPEAKER;
+    case AUDIO_DEVICE_OUT_WIRED_HEADSET:
+        return OUT_DEVICE_HEADSET;
+    case AUDIO_DEVICE_OUT_WIRED_HEADPHONE:
+        return OUT_DEVICE_HEADPHONES;
+    case AUDIO_DEVICE_OUT_BLUETOOTH_SCO:
+    case AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET:
+    case AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT:
+        return OUT_DEVICE_BT_SCO;
+    default:
+        return OUT_DEVICE_NONE;
+    }
+}
+
+/**
+ * @brief get_input_source_id
+ *
+ * @param source
+ *
+ * @returns
+ */
+int get_input_source_id(audio_source_t source)
+{
+    switch (source) {
+    case AUDIO_SOURCE_DEFAULT:
+        return IN_SOURCE_NONE;
+    case AUDIO_SOURCE_MIC:
+        return IN_SOURCE_MIC;
+    case AUDIO_SOURCE_CAMCORDER:
+        return IN_SOURCE_CAMCORDER;
+    case AUDIO_SOURCE_VOICE_RECOGNITION:
+        return IN_SOURCE_VOICE_RECOGNITION;
+    case AUDIO_SOURCE_VOICE_COMMUNICATION:
+        return IN_SOURCE_VOICE_COMMUNICATION;
+    default:
+        return IN_SOURCE_NONE;
+    }
+}
+
+bool is_headphone_on()
+{
+
+  FILE *file = fopen("/sys/class/switch/h2w/state", "r");
+  char buf[2] = {0};
+  if (file != NULL)
+  {
+    fread(buf, 1, 1, file);
+    fclose(file);
+  }
+  return atoi(buf) != 0;
+}
+
+
 static uint32_t out_get_sample_rate(const struct audio_stream *stream)
 {
     return 44100;
