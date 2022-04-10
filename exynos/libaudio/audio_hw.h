@@ -31,6 +31,7 @@
 #include <hardware/audio.h>
 
 #include <audio_route/audio_route.h>
+#include <audio_utils/resampler.h>
 
 /* PCM Interface of ALSA & Compress Offload Interface */
 #include <tinyalsa/asoundlib.h>
@@ -87,7 +88,7 @@ struct audio_device {
     struct mixer *mixer;// * +48 // adev + 192
     struct mixer *hifi_mixer;// * + 49 // adev + 196
 
-    void *v_50;// * + 50 // adev + 200
+    audio_source_t in_source;// * + 50 // adev + 200
     void *v_51;// * + 51 // adev + 204
     void *v_52;// * + 52 // adev + 208
     void *v_53;// * + 53 // adev + 212
@@ -154,15 +155,15 @@ struct stream_out {
     struct audio_stream_out stream;
     pthread_mutex_t lock; // *out + 25  // out + 100
 
-    void *v_104; // *out + 26 // out + 104
-    void *v_108; // *out + 27 // out + 108
-    void *v_112; // *out + 28 // out + 112
+    struct pcm *pcm; // *out + 26 // out + 104
+    struct pcm *hifi_pcm; // *out + 27 // out + 108
+    struct pcm *spdif_pcm; // *out + 28 // out + 112
     void *v_116; // *out + 29 // out + 116
 
-    void *v_120; // *out + 30 // out + 120
+    int sample_rate; // *out + 30 // out + 120
     void *v_124; // *out + 31 // out + 124
     void *v_128; // *out + 32 // out + 128
-    void *v_132; // *out + 33 // out + 132
+    audio_format_t format; // *out + 33 // out + 132
 
     void *v_136; // *out + 34 // out + 136
     void *v_140; // *out + 35 // out + 140
@@ -170,7 +171,7 @@ struct stream_out {
     void *v_148; // *out + 37 // out + 148
 
     void *v_152; // *out + 38 // out + 152
-    void *v_156; // *out + 39 // out + 156
+    audio_devices_t devices; // *out + 39 // out + 156
     void *v_160; // *out + 40 // out + 160
     void *v_164; // *out + 41 // out + 164
 
@@ -179,10 +180,10 @@ struct stream_out {
     void *v_176; // *out + 44 // out + 176
     void *v_180; // *out + 45 // out + 180
 
-    int sample_rate; // *out + 46 // out + 184
-    audio_format_t format; // *out + 47 // out + 188
+    int in_sample_rate; // *out + 46 // out + 184
+    audio_format_t in_format; // *out + 47 // out + 188
     void *v_192; // *out + 48 // out + 192
-    void *v_196; // *out + 49 // out + 196
+    struct resampler_itfe **resampler; // *out + 49 // out + 196
     void *v_200; // *out + 50 // out + 200
 
     struct audio_device *adev; // *out + 51 // out + 204

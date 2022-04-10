@@ -561,7 +561,7 @@ static int adev_open(const hw_module_t* module, const char* name,
     adev->hifi_mixer = hifi_mixer;
 
 
-    Open();
+    //Open();
     char region[128];
     char language[128];
     property_get("ro.product.locale.region", region, "0");
