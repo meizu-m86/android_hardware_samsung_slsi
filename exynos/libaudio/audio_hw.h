@@ -62,6 +62,11 @@ enum {
     IN_SOURCE_CNT
 };
 
+enum {
+    PCM_CARD_PRIMARY,
+    PCM_CARD_HIFI,
+    PCM_CARD_SPDIF
+};
 
 struct stream_out;
 struct stream_in;
