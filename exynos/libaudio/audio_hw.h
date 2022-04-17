@@ -167,10 +167,10 @@ struct stream_out {
 
     audio_devices_t devices; // *out + 39 // out + 156
 
-    bool *out_b_160; // *out + 40 // out + 160
-    bool *out_b_161;
-    bool *out_b_162;
-    bool *out_b_163;
+    bool out_b_160; // *out + 40 // out + 160
+    bool out_b_161;
+    bool out_b_162;
+    bool out_b_163;
 
     void *out_v_164; // *out + 41 // out + 164
 
