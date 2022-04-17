@@ -19,6 +19,9 @@
 
 #include "audio_hw.h"
 
+
+struct pcm_config pcm_config;
+
 /**
  * @brief get_output_device_id
  *
@@ -306,6 +309,14 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
     ALOGE("adev_open_output_stream...");
 
     struct audio_device *ladev = (struct audio_device *)dev;
+
+    if ( ladev->output_stream_state )
+    {
+    ALOGE("%s(): output stream has been opened, abort...", __func__);
+    *stream_out = NULL;
+    return -22;
+  }
+
     struct stream_out *out;
     int ret;
 
@@ -562,6 +573,7 @@ static int adev_open(const hw_module_t* module, const char* name,
 
 
     //Open();
+    //thread_refresh_audio_route(adev);
     char region[128];
     char language[128];
     property_get("ro.product.locale.region", region, "0");

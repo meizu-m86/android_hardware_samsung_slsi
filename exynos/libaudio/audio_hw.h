@@ -107,7 +107,7 @@ struct audio_device {
     struct pcm *pcm_pa_out;// * + 61 // adev + 244      // PA_OUT
     struct pcm *pcm_pa_in;// * + 62 // adev + 248     // PA_IN
 
-    void *v_63;      // * + 63 // adev + 252
+    struct audio_stream_in **stream_in;      // * + 63 // adev + 252
     struct audio_stream_out **stream_out;      // * + 64 // adev + 256
 
     bool tfa_power_state; // adev + 260
@@ -128,7 +128,7 @@ struct audio_device {
     void *v_71;      // * + 71 // adev + 284
 
     bool hifi_state; // * + 72 // adev + 288
-    bool b_289; //  adev + 289
+    bool hifi_pcm_opened; //  adev + 289
     bool b_290; // adev + 290
     bool b_291; // adev + 291
 
@@ -147,7 +147,7 @@ struct audio_device {
     bool b_314; // adev + 314
     bool b_315; // adev + 315
 
-    void *v_79; // * + 79 // adev + 316
+    void *adev_pcm_out_buffer; // * + 79 // adev + 316
 };
 
 // size : 0xD8 -> 216
@@ -158,52 +158,101 @@ struct stream_out {
     struct pcm *pcm; // *out + 26 // out + 104
     struct pcm *hifi_pcm; // *out + 27 // out + 108
     struct pcm *spdif_pcm; // *out + 28 // out + 112
-    void *v_116; // *out + 29 // out + 116
+    struct pcm_config pcmconfig; // *out + 29 // out + 116  // size: 40
 
-    int sample_rate; // *out + 30 // out + 120
-    void *v_124; // *out + 31 // out + 124
-    void *v_128; // *out + 32 // out + 128
-    audio_format_t format; // *out + 33 // out + 132
-
-    void *v_136; // *out + 34 // out + 136
-    void *v_140; // *out + 35 // out + 140
-    void *v_144; // *out + 36 // out + 144
-    void *v_148; // *out + 37 // out + 148
-
-    void *v_152; // *out + 38 // out + 152
     audio_devices_t devices; // *out + 39 // out + 156
-    void *v_160; // *out + 40 // out + 160
-    void *v_164; // *out + 41 // out + 164
+
+    bool *out_b_160; // *out + 40 // out + 160
+    bool *out_b_161;
+    bool *out_b_162;
+    bool *out_b_163;
+
+    void *out_v_164; // *out + 41 // out + 164
 
     int channel_mask; // *out + 42 // out + 168
-    void *v_172; // *out + 43 // out + 172
-    void *v_176; // *out + 44 // out + 176
-    void *v_180; // *out + 45 // out + 180
+    void *out_v_172; // *out + 43 // out + 172
+    void *out_v_176; // *out + 44 // out + 176
+    void *out_v_180; // *out + 45 // out + 180
 
     int in_sample_rate; // *out + 46 // out + 184
     audio_format_t in_format; // *out + 47 // out + 188
-    void *v_192; // *out + 48 // out + 192
+    void *out_v_192; // *out + 48 // out + 192
     struct resampler_itfe **resampler; // *out + 49 // out + 196
-    void *v_200; // *out + 50 // out + 200
+    void *out_resampler_pcm_out_buffer; // *out + 50 // out + 200
 
     struct audio_device *adev; // *out + 51 // out + 204
-    void *v_208; // *out + 52 // out + 208
-    void *v_212; // *out + 53 // out + 212
+    void *out_v_208; // *out + 52 // out + 208
+    void *out_v_212; // *out + 53 // out + 212
+};
+
+// size : 0x4E264 -> 1161144
+struct CVQStream {
+    unsigned int *L_0;
+    void *cvq_v_4;// + 4
+    pthread_t *read_on_thread;// + 8
+    void *cvq_v_12;// + 12
+    void *cvq_v_16;// + 16
+
+    void *cvq_v_320040;// + 320040
+    FILE *uart_char_dev;// + 320056
+
+    void *cvq_v_320068;// + 320068
+    void *cvq_v_320072;// + 320072
+
+    int (*cvq_open)();// + 320076
+    int (*cvq_close)();// + 320080
+    int (*cvq_start)();// + 320084
+    int (*readdirect)();// + 320088
+    int (*cvq_read)();// + 320092
+    int (*pcm_read_uart_char_dev)();// + 320096
+
 };
 
 // size : 0xB0 -> 176
 struct stream_in {
     struct audio_stream_in stream;
+
+    struct CVQStream * cvqStream;// *in + 17  //  in + 68
+
+    int is_cvq;/// *in + 18  //  in + 72
+    int in_int_76;/// *in + 19  //  in + 76
+    pthread_t *pcm_read_thread;/// *in + 20  //  in + 80
+    int in_int_84;/// *in + 21  //  in + 84
+
+    int in_int_88;/// *in + 22  //  in + 88
+    void *in_v_92;/// *in + 23  //  in + 92
+    int max_bytes;/// *in + 24  //  in + 96
+    int read_offset;/// *in + 25  //  in + 100
+
+    int write_offset;/// *in + 26  //  in + 104
+    int write_size;/// *in + 27  //  in + 108
+    void *in_v_112;/// *in + 28  //  in + 112
+
     pthread_mutex_t lock;// *in + 29  //  in + 116
 
-    bool b_124; // *in + 31 // in + 124
-    bool b_125;             // in + 125
-    bool b_126;             // in + 126
-    bool b_127;             // in + 127
+    struct pcm *pcm; // *in + 30  //  in + 120
+
+    bool in_b_124; // *in + 31 // in + 124
+    bool in_b_125;             // in + 125
+    bool in_b_126;             // in + 126
+    bool in_b_127;             // in + 127
 
     struct audio_config *config; // *in + 32 // in + 128
 
+    int (*in_fun_132)();/// *in + 33  //  in + 132
+
+    int (*get_next_buffer)(struct stream_in *stream_in);/// *in + 34  //  in + 136
+    int (*in_fun_140)();/// *in + 35  //  in + 140
+
+    void *in_v_144;/// *in + 36  //  in + 144
+
+    void *in_v_148;/// *in + 37  //  in + 148
+    int pcm_read_result;/// *in + 38  //  in + 152
+    void *in_v_156;/// *in + 39  //  in + 156
     audio_devices_t devices; // *in + 40 // in + 160
+
+    void *in_v_164;/// *in + 41  //  in + 164
+    void *in_v_168;/// *in + 42  //  in + 168
 
     struct audio_device *adev; // *in + 43 // in + 172
 };
