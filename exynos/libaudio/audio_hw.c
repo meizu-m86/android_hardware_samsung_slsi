@@ -18,6 +18,7 @@
 //#define LOG_NDEBUG 0
 
 #include "audio_hw.h"
+#include "audio_hw_def.h"
 
 
 struct pcm_config pcm_config;
@@ -101,6 +102,87 @@ bool is_headphone_on()
   return atoi(buf) != 0;
 }
 
+
+bool amplifier_initialize(struct audio_device *adev){
+  bool started = false;
+  pthread_mutex_lock(adev->lock);
+  struct pcm *pcm = pcm_open(0, 2, 0, &pcm_config_amplifier);
+  if ( pcm == NULL || !pcm_is_ready(pcm) )
+  {
+    ALOGE("%s(): pcm_open(BACKEND) failed: %s",  __func__,pcm_get_error(pcm));
+    started = false;
+  }
+  else
+  {
+    pcm_prepare(pcm);
+    struct pcm *pcm2 = pcm_open(0, 6, 0x10000000, &pcm_config_amplifier);
+    if ( pcm2 == NULL || !pcm_is_ready(pcm2) )
+    {
+      ALOGE("%s(): pcm_open(AMPLIFIER) failed: %s",  __func__,pcm_get_error(pcm2));
+      started = false;
+    }
+    else
+    {
+      pcm_prepare(pcm2);
+      audio_route_reset(a1->audio_route);
+      audio_route_apply_path(a1->audio_route, "speaker");
+      audio_route_update_mixer(a1->audio_route);
+
+      pthread_mutex_unlock(&a1->lock);
+      usleep(1000);
+      started = NxpTfa98xx_StartUp(pcm_config_amplifier->rate);
+      if ( started != 0)
+        ALOGE("%s(): failed to bring up tfa98xx",  __func__);
+      usleep(1000);
+    }
+    pcm_close(pcm2);
+  }
+  pcm_close(pcm);
+  pthread_mutex_unlock(&a1->lock);
+}
+
+int thread_refresh_audio_route(struct audio_device *adev)
+{
+  ALOGE("%s(): enter",  __func__);
+  int count = 0;
+  while ( true )
+  {
+    struct mixer *mixer = mixer_open(0);
+    if ( mixer == NULL )
+    {
+      ALOGE("%s(): Unable to open mixer",  __func__);
+      return 0;
+    }
+    mixer_ctl ctl = mixer_get_ctl_by_name(mixer, "Internal Route");
+    mixer_close(mixer);
+    if ( ctl == NULL )
+      break;
+
+    usleep(50000);
+    if ( ++count >= 500 )
+    {
+      ALOGE("%s(): Waiting for escore being ready timeout", __func__);
+      return 0;
+    }
+  }
+  pthread_mutex_lock(adev->lock);
+  audio_route_free(adev->audio_route);
+  struct audio_route* audio_route = audio_route_init(0, "/system/etc/mixer_paths.xml");
+  adev->audio_route = audio_route;
+  if ( audio_route == NULL )
+    ALOGE( "%s(): failed to open audio route", __func__);
+  pthread_mutex_unlock(adev->lock);
+
+  if ( !amplifier_initialize(adev) )
+    ALOGE("%s(): failed to bring up amplifier, speaker will be silent", __func__);
+  else
+    property_set("primary.pa.ready", "1");
+
+  ALOGE("%s(): leave",  __func__);
+  return 0;
+}
+
+// -----------
 
 static uint32_t out_get_sample_rate(const struct audio_stream *stream)
 {
@@ -312,10 +394,10 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
 
     if ( ladev->output_stream_state )
     {
-    ALOGE("%s(): output stream has been opened, abort...", __func__);
-    *stream_out = NULL;
-    return -22;
-  }
+        ALOGE("%s(): output stream has been opened, abort...", __func__);
+        *stream_out = NULL;
+        return -22;
+    }
 
     struct stream_out *out;
     int ret;
