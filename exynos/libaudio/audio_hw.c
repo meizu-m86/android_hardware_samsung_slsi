@@ -124,13 +124,13 @@ bool amplifier_initialize(struct audio_device *adev){
     else
     {
       pcm_prepare(pcm2);
-      audio_route_reset(a1->audio_route);
-      audio_route_apply_path(a1->audio_route, "speaker");
-      audio_route_update_mixer(a1->audio_route);
+      audio_route_reset(adev->audio_route);
+      audio_route_apply_path(adev->audio_route, "speaker");
+      audio_route_update_mixer(adev->audio_route);
 
-      pthread_mutex_unlock(&a1->lock);
+      pthread_mutex_unlock(adev->lock);
       usleep(1000);
-      started = NxpTfa98xx_StartUp(pcm_config_amplifier->rate);
+      started = NxpTfa98xx_StartUp(pcm_config_amplifier.rate);
       if ( started != 0)
         ALOGE("%s(): failed to bring up tfa98xx",  __func__);
       usleep(1000);
@@ -138,7 +138,8 @@ bool amplifier_initialize(struct audio_device *adev){
     pcm_close(pcm2);
   }
   pcm_close(pcm);
-  pthread_mutex_unlock(&a1->lock);
+  pthread_mutex_unlock(adev->lock);
+  return started;
 }
 
 int thread_refresh_audio_route(struct audio_device *adev)
@@ -153,7 +154,7 @@ int thread_refresh_audio_route(struct audio_device *adev)
       ALOGE("%s(): Unable to open mixer",  __func__);
       return 0;
     }
-    mixer_ctl ctl = mixer_get_ctl_by_name(mixer, "Internal Route");
+    struct mixer_ctl *ctl = mixer_get_ctl_by_name(mixer, "Internal Route");
     mixer_close(mixer);
     if ( ctl == NULL )
       break;
@@ -655,7 +656,7 @@ static int adev_open(const hw_module_t* module, const char* name,
 
 
     //Open();
-    //thread_refresh_audio_route(adev);
+    thread_refresh_audio_route(adev);
     char region[128];
     char language[128];
     property_get("ro.product.locale.region", region, "0");

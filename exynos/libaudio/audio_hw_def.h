@@ -4,6 +4,12 @@
 
 #include <system/audio.h>
 
+#define DEFAULT_OUTPUT_CHANNELS 1
+#define DEFAULT_OUTPUT_SAMPLING_RATE 48000
+#define PRIMARY_OUTPUT_PERIOD_SIZE 4096
+#define PRIMARY_OUTPUT_PERIOD_COUNT 1
+#define PRIMARY_OUTPUT_STOP_THREASHOLD 1
+
 struct pcm_config pcmconfig = {
     .channels = DEFAULT_OUTPUT_CHANNELS,
     .rate = DEFAULT_OUTPUT_SAMPLING_RATE,

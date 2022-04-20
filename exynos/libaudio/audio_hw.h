@@ -38,6 +38,7 @@
 #include <tinycompress/tinycompress.h>
 #include <compress_params.h>
 
+#include <audio_utils/primitives.h>
 
 enum {
     OUT_DEVICE_SPEAKER,
@@ -74,7 +75,7 @@ struct stream_in;
 // size : 0x140 -> 320
 struct audio_device {
     struct audio_hw_device device;
-    pthread_mutex_t lock;// *+ 41 //  adev + 164 /* see note below on mutex acquisition order */
+    pthread_mutex_t *lock;// *+ 41 //  adev + 164 /* see note below on mutex acquisition order */
     audio_mode_t amode; // *+ 42 // adev + 168
     audio_devices_t out_device; // out_device; // *+ 43 // adev + 172
     // audio_devices_t :/system/media/audio/include/system/audio.h  844: typedef uint32_t audio_devices_t;
@@ -158,7 +159,7 @@ struct audio_device {
 // size : 0xD8 -> 216
 struct stream_out {
     struct audio_stream_out stream;
-    pthread_mutex_t lock; // *out + 25  // out + 100
+    pthread_mutex_t *lock; // *out + 25  // out + 100
 
     struct pcm *pcm; // *out + 26 // out + 104
     struct pcm *hifi_pcm; // *out + 27 // out + 108
@@ -233,7 +234,7 @@ struct stream_in {
     int write_size;/// *in + 27  //  in + 108
     void *in_v_112;/// *in + 28  //  in + 112
 
-    pthread_mutex_t lock;// *in + 29  //  in + 116
+    pthread_mutex_t *lock;// *in + 29  //  in + 116
 
     struct pcm *pcm; // *in + 30  //  in + 120
 
@@ -264,6 +265,6 @@ struct stream_in {
 
 // Tfa98xx fun
 extern int NxpTfa98xx_Stop();
-
+extern bool NxpTfa98xx_StartUp(int in_sample_rate);
 
 #endif  // __EXYNOS_AUDIOHAL_H__
