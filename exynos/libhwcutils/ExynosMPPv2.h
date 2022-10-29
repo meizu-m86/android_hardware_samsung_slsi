@@ -85,8 +85,8 @@ enum {
 };
 
 class ExynosMPP {
-	MppFactory *mppFact;
-	LibMpp *libmpp;
+	MppFactory *mppFact; //1 对的
+	LibMpp *libmpp;      // 2 对的
 
     struct deleteBufferInfo {
         buffer_handle_t buffer;
@@ -100,13 +100,13 @@ class ExynosMPP {
         ExynosMPP(ExynosDisplay *display, unsigned int mppType, unsigned int mppIndex);
         virtual ~ExynosMPP();
         void initMPP();
-        const android::String8& getName() const;
+        //const android::String8& getName() const; // 多余的
 
         bool isSrcConfigChanged(exynos_mpp_img &c1, exynos_mpp_img &c2);
         bool formatRequiresMPP(int format);
         void setDisplay(ExynosDisplay *display);
-        void preAssignDisplay(ExynosDisplay *display);
-        bool isAssignable(ExynosDisplay *display);
+        //void preAssignDisplay(ExynosDisplay *display);// 多余的
+        //bool isAssignable(ExynosDisplay *display);// 多余的
         bool bufferChanged(hwc_layer_1_t &layer);
         bool needsReqbufs();
         bool inUse();
@@ -155,12 +155,13 @@ class ExynosMPP {
 
         /* Fields */
         static int                      mainDisplayWidth;
-        uint32_t                        mType;
+        uint32_t                        mType;// 3 对的
         uint32_t                        mIndex;
-        int                             mState;
-        void                            *mMPPHandle;
-        ExynosDisplay                   *mDisplay;
-        ExynosDisplay                   *mPreAssignedDisplay;
+        int                             mState;// 20 对的  5
+        int                             mSubdevFd;// 差1个  6 // 需setupInternalMPP 中初始化
+        void                            *mMPPHandle; // 6 -> 7
+        ExynosDisplay                   *mDisplay; // 28 -> 32
+        // ExynosDisplay                   *mPreAssignedDisplay; // 多余的，这里减少的4字节
         exynos_mpp_img                  mSrcConfig;
         exynos_mpp_img                  mMidConfig;
         exynos_mpp_img                  mDstConfig;
@@ -172,17 +173,17 @@ class ExynosMPP {
         intptr_t                        mLastMPPLayerHandle;
         int                             mS3DMode;
         bool                            mDoubleOperation;
-        bool                            mCanRotate;
-        bool                            mCanBlend;
-        android::List<deleteBufferInfo > mFreedBuffers;
-        BufferFreeThread                *mBufferFreeThread;
-        android::Mutex                  mMutex;
-        alloc_device_t*                 mAllocDevice;
-        size_t                          mNumAvailableDstBuffers;
-        size_t                          mBufferType;
-        int                             mSMemFd;
-        bool                            mCanBeUsed;
-        uint32_t                        mAllocatedBufferNum;
+        bool                            mCanRotate;// 314 对的  
+        bool                            mCanBlend;// 315 对的
+        android::List<deleteBufferInfo > mFreedBuffers; // 79 - 80  316-320
+        BufferFreeThread                *mBufferFreeThread; // 81
+        android::Mutex                  mMutex;// 328 是对的，前面要减少一个 4字节的  82
+        alloc_device_t*                 mAllocDevice; // 83 是对的  332 
+        size_t                          mNumAvailableDstBuffers; // 84
+        size_t                          mBufferType;// 85 是对的 340
+        int                             mSMemFd;// 86 对的  344
+        bool                            mCanBeUsed; // 348 对的
+        uint32_t                        mAllocatedBufferNum; // 88 362
         uint32_t                        mAllocatedMidBufferNum;
         bool                            mDstRealloc;
         bool                            mMidRealloc;
@@ -222,7 +223,7 @@ class ExynosMPP {
 
     private:
         size_t  getBufferType(uint32_t usage);
-        android::String8 mName;
+        //android::String8 mName; // 364 多余的 91
 };
 
 class BufferFreeThread: public android::Thread {

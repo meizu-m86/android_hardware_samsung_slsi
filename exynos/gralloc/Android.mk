@@ -35,7 +35,6 @@ LOCAL_C_INCLUDES := \
 	$(TOP)/hardware/samsung_slsi/exynos5/include
 
 LOCAL_SRC_FILES := 	\
-	format_chooser.cpp \
 	gralloc.cpp 	\
 	framebuffer.cpp \
 	mapper.cpp

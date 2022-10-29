@@ -42,7 +42,6 @@
 //#include "gralloc_buffer_priv.h"
 #endif
 
-#include "format_chooser.h"
 
 
 /*****************************************************************************/

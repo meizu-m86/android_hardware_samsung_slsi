@@ -30,24 +30,13 @@ int __fastcall gralloc_unregister_buffer(int, _DWORD *);
 int __fastcall gralloc_lock(int, int, int, int, int, int, int, _DWORD *);
 int __fastcall gralloc_unlock(int, _DWORD *);
 int __fastcall gralloc_lock_ycbcr(int, _DWORD *, int, int, int, int, int, int);
-// _DWORD android::VectorImpl::finish_vector(android::VectorImpl *__hidden this); idb
-// void __fastcall android::VectorImpl::~VectorImpl(android::VectorImpl *__hidden this); idb
 // int pthread_mutex_lock(pthread_mutex_t *mutex);
 // int pthread_mutex_unlock(pthread_mutex_t *mutex);
-// _DWORD android::VectorImpl::pop(android::VectorImpl *__hidden this); idb
 // int open(const char *file, int oflag, ...);
 // int ioctl(int fd, unsigned int request, ...);
 // int __fastcall _errno(_DWORD); weak
 // void *memcpy(void *dest, const void *src, size_t n);
 int __fastcall init_fb(int);
-// _DWORD __fastcall android::VectorImpl::VectorImpl(android::VectorImpl *__hidden this, unsigned int, unsigned int); idb
-// int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr);
-int android::Vector<hwc_callback_entry>::do_construct();
-int android::Vector<hwc_callback_entry>::do_construct();
-void __fastcall android::Vector<hwc_callback_entry>::do_copy(int, int, int, int);
-int __fastcall android::Vector<hwc_callback_entry>::do_splat(int, int, int *, int);
-int __fastcall android::Vector<hwc_callback_entry>::do_move_forward(int, int, int, int);
-void __fastcall android::Vector<hwc_callback_entry>::do_copy(int, int, int, int);
 // int munmap(void *addr, size_t len);
 // char *strerror(int errnum);
 // void *mmap(void *addr, size_t len, int prot, int flags, int fd, __off_t offset);
@@ -63,13 +52,7 @@ int __fastcall sub_1170(int a1, _DWORD *a2);
 int __fastcall sub_11E8(void *a1);
 int __fastcall sub_11F4(int a1, char *s1, _DWORD *a3);
 int __fastcall sub_1270(int a1, int a2, int a3, int a4, int a5, _DWORD *a6, signed int *a7);
-int android::Vector<hwc_callback_entry>::do_construct(void); // weak
-void __fastcall android::Vector<hwc_callback_entry>::do_copy(int a1, int a2, int a3, int a4);
-int __fastcall android::Vector<hwc_callback_entry>::do_splat(int a1, int a2, int *a3, int a4);
-int __fastcall android::Vector<hwc_callback_entry>::do_move_forward(int a1, int a2, int a3, int a4);
 int __fastcall sub_18C0(void *a1);
-android::VectorImpl *__fastcall sub_18CC(android::VectorImpl *a1);
-android::VectorImpl *__fastcall sub_18F4(android::VectorImpl *a1);
 int __fastcall sub_1908(_DWORD *a1);
 int __fastcall sub_194C(int a1, _DWORD *a2);
 int __fastcall init_fb(int a1);
@@ -163,50 +146,6 @@ int __fastcall init_fb(int a1)
   return _Z7init_fbP16private_module_t(a1);
 }
 
-//----- (00001024) --------------------------------------------------------
-// attributes: thunk
-int android::Vector<hwc_callback_entry>::do_construct()
-{
-  return _ZNK7android6VectorI18hwc_callback_entryE12do_constructEPvj();
-}
-// 1868: using guessed type int android::Vector<hwc_callback_entry>::do_construct(void);
-
-//----- (00001030) --------------------------------------------------------
-// attributes: thunk
-int android::Vector<hwc_callback_entry>::do_construct()
-{
-  return _ZNK7android6VectorI18hwc_callback_entryE12do_constructEPvj();
-}
-// 1868: using guessed type int android::Vector<hwc_callback_entry>::do_construct(void);
-
-//----- (0000103C) --------------------------------------------------------
-// attributes: thunk
-void __fastcall android::Vector<hwc_callback_entry>::do_copy(int a1, int a2, int a3, int a4)
-{
-  _ZNK7android6VectorI18hwc_callback_entryE7do_copyEPvPKvj(a1, a2, a3, a4);
-}
-
-//----- (00001048) --------------------------------------------------------
-// attributes: thunk
-int __fastcall android::Vector<hwc_callback_entry>::do_splat(int a1, int a2, int *a3, int a4)
-{
-  return _ZNK7android6VectorI18hwc_callback_entryE8do_splatEPvPKvj(a1, a2, a3, a4);
-}
-
-//----- (00001054) --------------------------------------------------------
-// attributes: thunk
-int __fastcall android::Vector<hwc_callback_entry>::do_move_forward(int a1, int a2, int a3, int a4)
-{
-  return _ZNK7android6VectorI18hwc_callback_entryE15do_move_forwardEPvPKvj(a1, a2, a3, a4);
-}
-
-//----- (00001060) --------------------------------------------------------
-// attributes: thunk
-void __fastcall android::Vector<hwc_callback_entry>::do_copy(int a1, int a2, int a3, int a4)
-{
-  _ZNK7android6VectorI18hwc_callback_entryE7do_copyEPvPKvj(a1, a2, a3, a4);
-}
-
 //----- (00001090) --------------------------------------------------------
 // attributes: thunk
 int __fastcall getIonFd(int a1)
@@ -252,68 +191,26 @@ int __fastcall sub_1154(int a1)
 }
 
 //----- (00001170) --------------------------------------------------------
+static int gralloc_free(alloc_device_t* dev,
+                        buffer_handle_t handle)
 int __fastcall sub_1170(int a1, _DWORD *a2)
-{
-  int v4; // r0
-  int v5; // r0
-  int v6; // r0
-
-  if ( a2 && *a2 == 12 && a2[1] + a2[2] == 29 && a2[6] == 51647890 )
-  {
-    v4 = *(_DWORD *)(a1 + 8);
-    if ( *((_QWORD *)a2 + 10) )
-      grallocUnmap(v4, (int)a2);
-    close(a2[3]);
-    v5 = a2[4];
-    if ( v5 >= 0 )
-      close(v5);
-    v6 = a2[5];
-    if ( v6 >= 0 )
-      close(v6);
-    a2[6] = 0;
-    operator delete(a2);
-    return 0;
-  }
-  else
-  {
-    _android_log_print(6, "gralloc", "invalid gralloc handle (at %p)", a2);
-    return -22;
-  }
-}
-// EB0: using guessed type int _android_log_print(_DWORD, _DWORD, const char *, ...);
+ok
 
 //----- (000011E8) --------------------------------------------------------
+static int gralloc_close(struct hw_device_t *dev)
 int __fastcall sub_11E8(void *a1)
-{
-  if ( a1 )
-    free(a1);
-  return 0;
-}
+ok
 
 //----- (000011F4) --------------------------------------------------------
+int gralloc_device_open(const hw_module_t* module, const char* name,
+                        hw_device_t** device)
 int __fastcall sub_11F4(int a1, char *s1, _DWORD *a3)
-{
-  _DWORD *v6; // r4
-
-  if ( strcmp(s1, "gpu0") )
-    return j_fb_device_open(a1, (int)s1, a3);
-  v6 = malloc(0x68u);
-  memset(v6, 0, 0x68u);
-  v6[2] = a1;
-  v6[15] = sub_11E8;
-  *v6 = 1213678676;
-  v6[1] = 0;
-  v6[16] = sub_1270;
-  v6[17] = sub_1170;
-  if ( *(_DWORD *)(a1 + 200) == -1 )
-    *(_DWORD *)(a1 + 200) = ion_open();
-  *a3 = v6;
-  return 0;
-}
-// F10: using guessed type int ion_open(void);
-// 1270: using guessed type int sub_1270(int, int, int, int, int, int, int);
+ok
 
 //----- (00001270) --------------------------------------------------------
+static int gralloc_alloc(alloc_device_t* dev,
+                         int w, int h, int format, int usage,
+                         buffer_handle_t* pHandle, int* pStride)
 int __fastcall sub_1270(int a1, int a2, int a3, int a4, int a5, _DWORD *a6, signed int *a7)
 {
   int v7; // r10
@@ -782,72 +679,6 @@ LABEL_88:
 // EB0: using guessed type int _android_log_print(_DWORD, _DWORD, const char *, ...);
 // F28: using guessed type int __fastcall ion_alloc_fd(_DWORD, _DWORD, _DWORD, _DWORD, _DWORD, _DWORD);
 
-//----- (0000186A) --------------------------------------------------------
-void __fastcall android::Vector<hwc_callback_entry>::do_copy(int a1, int a2, int a3, int a4)
-{
-  int v5; // r4
-  int v6; // r0
-  _DWORD *v7; // r5
-  int v8; // r1
-
-  v5 = 0;
-  while ( v5 != a4 )
-  {
-    v6 = 8 * v5++;
-    v7 = (_DWORD *)(a2 + v6);
-    v8 = *(_DWORD *)(v6 + a3 + 4);
-    *v7 = *(_DWORD *)(v6 + a3);
-    v7[1] = v8;
-  }
-}
-
-//----- (00001886) --------------------------------------------------------
-int __fastcall android::Vector<hwc_callback_entry>::do_splat(int a1, int a2, int *a3, int a4)
-{
-  int result; // r0
-  int v6; // r1
-
-  while ( 1 )
-  {
-    --a4;
-    a2 += 8;
-    if ( a4 == -1 )
-      break;
-    result = *a3;
-    v6 = a3[1];
-    *(_DWORD *)(a2 - 8) = *a3;
-    *(_DWORD *)(a2 - 4) = v6;
-  }
-  return result;
-}
-
-//----- (0000189E) --------------------------------------------------------
-int __fastcall android::Vector<hwc_callback_entry>::do_move_forward(int a1, int a2, int a3, int a4)
-{
-  int v4; // r4
-  int v5; // r7
-  int v6; // r2
-  int result; // r0
-  _DWORD *v8; // r5
-  int v9; // r1
-
-  v4 = 0;
-  v5 = a2 + 8 * a4;
-  v6 = a3 + 8 * a4;
-  while ( 1 )
-  {
-    --a4;
-    v4 -= 8;
-    result = a4 + 1;
-    if ( a4 == -1 )
-      break;
-    v8 = (_DWORD *)(v5 + v4);
-    v9 = *(_DWORD *)(v6 + v4 + 4);
-    *v8 = *(_DWORD *)(v6 + v4);
-    v8[1] = v9;
-  }
-  return result;
-}
 
 //----- (000018C0) --------------------------------------------------------
 int __fastcall sub_18C0(void *a1)
@@ -857,23 +688,7 @@ int __fastcall sub_18C0(void *a1)
   return 0;
 }
 
-//----- (000018CC) --------------------------------------------------------
-android::VectorImpl *__fastcall sub_18CC(android::VectorImpl *a1)
-{
-  *(_DWORD *)a1 = &off_3E18;
-  android::VectorImpl::finish_vector(a1);
-  android::VectorImpl::~VectorImpl(a1);
-  return a1;
-}
-// 3E18: using guessed type void *;
 
-//----- (000018F4) --------------------------------------------------------
-android::VectorImpl *__fastcall sub_18F4(android::VectorImpl *a1)
-{
-  sub_18CC(a1);
-  operator delete(a1);
-  return a1;
-}
 
 //----- (00001908) --------------------------------------------------------
 int __fastcall sub_1908(_DWORD *a1)

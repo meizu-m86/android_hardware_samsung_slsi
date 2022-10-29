@@ -47,7 +47,6 @@
 
 #if MALI_AFBC_GRALLOC == 1 /* It's for AFBC support on GPU DDK*/
 //#include "gralloc_buffer_priv.h"
-#include "format_chooser.h"
 #define GRALLOC_ARM_INTFMT_EXTENSION_BIT_START     32
 /* This format will be use AFBC */
 #define GRALLOC_ARM_INTFMT_AFBC                 (1ULL << (GRALLOC_ARM_INTFMT_EXTENSION_BIT_START+0))
@@ -167,12 +166,9 @@ static int gralloc_alloc_rgb(int ionfd, int w, int h, int format, int usage,
 {
     size_t size, bpr, alignment = 0, ext_size=256;
     int bpp = 0, vstride, fd, err;
-    uint64_t internal_format;
 
     unsigned int heap_mask = _select_heap(usage);
     int frameworkFormat = format;
-    int is_compressible = check_for_compression(w, h, format, usage);
-    internal_format = gralloc_select_format(format, usage, is_compressible);
 
     switch (format) {
         case HAL_PIXEL_FORMAT_EXYNOS_ARGB_8888:
@@ -210,18 +206,6 @@ static int gralloc_alloc_rgb(int ionfd, int w, int h, int format, int usage,
         *stride = bpr / bpp;
         size = size + ext_size;
 
-        if (is_compressible)
-        {
-            /* if is_compressible = 1, width is alread 16 align so we can use width instead of w_aligned*/
-            int h_aligned = ALIGN( h, AFBC_PIXELS_PER_BLOCK );
-            int nblocks = w / AFBC_PIXELS_PER_BLOCK * h_aligned / AFBC_PIXELS_PER_BLOCK;
-
-            if ( size )
-            {
-                size = w * h_aligned * bpp +
-                    ALIGN( nblocks * AFBC_HEADER_BUFFER_BYTES_PER_BLOCKENTRY, AFBC_BODY_BUFFER_BYTE_ALIGNMENT );
-            }
-        }
     }
 
     if (usage & GRALLOC_USAGE_PROTECTED) {
@@ -252,14 +236,14 @@ static int gralloc_alloc_rgb(int ionfd, int w, int h, int format, int usage,
         crc_size = num_tiles_x * num_tiles_y * sizeof(long long unsigned int);
         err = ion_alloc_fd(ionfd, crc_size + sizeof(struct gralloc_crc_header), alignment, heap_mask, ion_flags,
                            &fd1);
-        *hnd = new private_handle_t(fd, fd1, size, usage, w, h, format, internal_format, frameworkFormat, *stride,
-                                vstride, is_compressible);
+        *hnd = new private_handle_t(fd, fd1, size, usage, w, h, format, frameworkFormat, *stride,
+                                vstride);
     }
     else
 #endif /* USES_EXYNOS_CRC_BUFFER_ALLOC */
     {
-        *hnd = new private_handle_t(fd, size, usage, w, h, format, internal_format, frameworkFormat, *stride,
-                                vstride, is_compressible);
+        *hnd = new private_handle_t(fd, size, usage, w, h, format, frameworkFormat, *stride,
+                                vstride);
     }
 
     return err;
@@ -272,8 +256,6 @@ static int gralloc_alloc_framework_yuv(int ionfd, int w, int h, int format, int 
     size_t size=0, ext_size=256;
     int err, fd;
     unsigned int heap_mask = _select_heap(usage);
-    int is_compressible = check_for_compression(w, h, format, usage);
-    uint64_t internal_format = gralloc_select_format(format, usage, is_compressible);
 
     switch (format) {
         case HAL_PIXEL_FORMAT_YV12:
@@ -297,7 +279,7 @@ static int gralloc_alloc_framework_yuv(int ionfd, int w, int h, int format, int 
     if (err)
         return err;
 
-    *hnd = new private_handle_t(fd, size, usage, w, h, format, internal_format, frameworkFormat, *stride, h, is_compressible);
+    *hnd = new private_handle_t(fd, size, usage, w, h, format, frameworkFormat, *stride, h);
     return err;
 }
 
@@ -311,8 +293,6 @@ static int gralloc_alloc_yuv(int ionfd, int w, int h, int format,
     unsigned int heap_mask = _select_heap(usage);
     // Keep around original requested format for later validation
     int frameworkFormat = format;
-    int is_compressible = 0;
-    uint64_t internal_format = 0;
 
     *stride = ALIGN(w, 16);
 
@@ -347,8 +327,6 @@ static int gralloc_alloc_yuv(int ionfd, int w, int h, int format,
     } else if (usage & GRALLOC_USAGE_CAMERA_RESERVED)
         ion_flags |= ION_EXYNOS_MFC_OUTPUT_MASK;
 
-    is_compressible = check_for_compression(w, h, format, usage);
-    internal_format = gralloc_select_format(format, usage, is_compressible);
 
     switch (format) {
         case HAL_PIXEL_FORMAT_EXYNOS_YV12_M:
@@ -444,7 +422,7 @@ static int gralloc_alloc_yuv(int ionfd, int w, int h, int format,
     }
     if (planes == 1) {
         *hnd = new private_handle_t(fd, luma_size, usage, w, h,
-                                    format, internal_format, frameworkFormat, *stride, luma_vstride, is_compressible);
+                                    format, frameworkFormat, *stride, luma_vstride);
     } else {
         err = ion_alloc_fd(ionfd, chroma_size, 0, heap_mask, ion_flags, &fd1);
         if (err)
@@ -458,10 +436,10 @@ static int gralloc_alloc_yuv(int ionfd, int w, int h, int format,
                 goto err2;
 
             *hnd = new private_handle_t(fd, fd1, fd2, luma_size, usage, w, h,
-                                        format, internal_format, frameworkFormat, *stride, luma_vstride, is_compressible);
+                                        format, frameworkFormat, *stride, luma_vstride);
         } else {
-            *hnd = new private_handle_t(fd, fd1, luma_size, usage, w, h, format, internal_format, frameworkFormat,
-                                        *stride, luma_vstride, is_compressible);
+            *hnd = new private_handle_t(fd, fd1, luma_size, usage, w, h, format, frameworkFormat,
+                                        *stride, luma_vstride);
         }
     }
     return err;
@@ -562,6 +540,7 @@ int gralloc_device_open(const hw_module_t* module, const char* name,
     int status = -EINVAL;
     if (!strcmp(name, GRALLOC_HARDWARE_GPU0)) {
         gralloc_context_t *dev;
+        // 大小一致
         dev = (gralloc_context_t*)malloc(sizeof(*dev));
 
         /* initialize our state here */

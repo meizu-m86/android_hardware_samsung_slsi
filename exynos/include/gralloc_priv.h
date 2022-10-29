@@ -37,11 +37,6 @@
 #define GRALLOC_USAGE_PROTECTED_DPB     0x00800000
 #define GRALLOC_USAGE_NOZEROED          0x08000000
 
-enum {
-	PREFER_COMPRESSION_NO_CHANGE = 0x00,
-	PREFER_COMPRESSION_ENABLE    = 0x01,
-	PREFER_COMPRESSION_DISABLE   = 0x02,
-};
 
 /*****************************************************************************/
 
@@ -123,9 +118,7 @@ struct private_handle_t {
     private_handle_t(int fd, int size, int flags) :
         fd(fd), fd1(-1), fd2(-1), magic(sMagic), flags(flags), size(size),
         offset(0), format(0), width(0), height(0), stride(0), vstride(0), frameworkFormat(0),
-        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0), 
-        dssRatio(0), prefer_compression(PREFER_COMPRESSION_NO_CHANGE),
-        internal_format(0), is_compressible(0), compressed_out(0)
+        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0)
 
     {
         version = sizeof(native_handle);
@@ -134,12 +127,10 @@ struct private_handle_t {
     }
 
     private_handle_t(int fd, int size, int flags, int w,
-                    int h, int format, uint64_t internal_format, int frameworkFormat, int stride, int vstride, int is_compressible) :
+                    int h, int format, int frameworkFormat, int stride, int vstride) :
         fd(fd), fd1(-1), fd2(-1), magic(sMagic), flags(flags), size(size),
         offset(0), format(format), width(w), height(h), stride(stride), vstride(vstride), frameworkFormat(frameworkFormat),
-        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0), 
-        dssRatio(0), prefer_compression(PREFER_COMPRESSION_NO_CHANGE),
-        internal_format(internal_format), is_compressible(is_compressible), compressed_out(0)
+        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0)
 
     {
         version = sizeof(native_handle);
@@ -148,12 +139,10 @@ struct private_handle_t {
     }
 
     private_handle_t(int fd, int fd1, int size, int flags, int w,
-                    int h, int format, uint64_t internal_format, int frameworkFormat, int stride, int vstride, int is_compressible) :
+                    int h, int format, int frameworkFormat, int stride, int vstride) :
         fd(fd), fd1(fd1), fd2(-1), magic(sMagic), flags(flags), size(size),
         offset(0), format(format), width(w), height(h), stride(stride), vstride(vstride), frameworkFormat(frameworkFormat),
-        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0), 
-        dssRatio(0), prefer_compression(PREFER_COMPRESSION_NO_CHANGE),
-        internal_format(internal_format), is_compressible(is_compressible), compressed_out(0)
+        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0)
 
     {
         version = sizeof(native_handle);
@@ -162,12 +151,10 @@ struct private_handle_t {
     }
 
     private_handle_t(int fd, int fd1, int fd2, int size, int flags, int w,
-                    int h, int format, uint64_t internal_format, int frameworkFormat, int stride, int vstride, int is_compressible) :
+                    int h, int format, int frameworkFormat, int stride, int vstride) :
         fd(fd), fd1(fd1), fd2(fd2), magic(sMagic), flags(flags), size(size),
         offset(0), format(format), width(w), height(h), stride(stride), vstride(vstride), frameworkFormat(frameworkFormat),
-        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0), 
-        dssRatio(0), prefer_compression(PREFER_COMPRESSION_NO_CHANGE),
-        internal_format(internal_format), is_compressible(is_compressible), compressed_out(0)
+        handle(0), handle1(0), handle2(0), base(0), base1(0), base2(0)
 
     {
         version = sizeof(native_handle);
@@ -184,6 +171,8 @@ struct private_handle_t {
                 hnd->numInts + hnd->numFds != sNumInts() + sNumFds ||
                 hnd->magic != sMagic)
         {
+            ALOGE("invalid gralloc handle hnd->numInts:%d,hnd->numFds:%d,sNumInts():%d,sNumFds:%d",
+                        hnd->numInts , hnd->numFds , sNumInts() , sNumFds);
             ALOGE("invalid gralloc handle (at %p)", reinterpret_cast<void *>(const_cast<native_handle *>(h)));
             return -EINVAL;
         }
@@ -204,14 +193,10 @@ struct private_handle_t {
 
     int     dssRatio;
     int     cropLeft;
-    int     cropTop;
-    int     cropRight;
-    int     cropBottom;
+    //int     cropTop;
+    //int     cropRight;
+    //int     cropBottom;
 
-    int          prefer_compression;
-    uint64_t     internal_format;
-    int          is_compressible;
-    int          compressed_out;
 
 #endif
 };

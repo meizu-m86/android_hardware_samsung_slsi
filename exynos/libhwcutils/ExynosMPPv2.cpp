@@ -12,6 +12,7 @@ int ExynosMPP::mainDisplayWidth = 0;
 size_t visibleWidth(ExynosMPP *processor, hwc_layer_1_t &layer, int format,
         int xres)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     int bpp;
     if (processor->isProcessingRequired(layer, format) && format != HAL_PIXEL_FORMAT_RGB_565)
         bpp = 32;
@@ -25,6 +26,7 @@ size_t visibleWidth(ExynosMPP *processor, hwc_layer_1_t &layer, int format,
 
 void ExynosMPP::initMPP()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mMPPHandle = NULL;
     memset(&mSrcConfig, 0, sizeof(mSrcConfig));
     memset(&mMidConfig, 0, sizeof(mMidConfig));
@@ -40,11 +42,16 @@ void ExynosMPP::initMPP()
     mS3DMode = 0;
     mppFact = NULL;
     libmpp = NULL;
-    mPreAssignedDisplay = NULL;
     mDoubleOperation = false;
     mCanRotate = (mType != MPP_VG);
     mCanBlend = (mType != MPP_VG);
+
     mAllocDevice = NULL;
+    // mBufferFreeThread 初始化
+    mBufferFreeThread = new BufferFreeThread(this);
+    mBufferFreeThread->mRunning = true;
+    mBufferFreeThread->run("MPPThread");
+
     mNumAvailableDstBuffers = NUM_MPP_DST_BUFS;
     mBufferType = MPP_BUFFER_NORMAL;
     mSMemFd = -1;
@@ -58,26 +65,7 @@ void ExynosMPP::initMPP()
 
     mCanBeUsed = true;
 
-    switch (mType) {
-    case MPP_VG:
-        mName = "VG";
-        break;
-    case MPP_VGR:
-        mName = "VGR";
-        break;
-    case MPP_VPP_G:
-        mName = "G";
-        break;
-    case MPP_MSC:
-        mName = "MSC";
-        break;
-    default:
-        mName = "-";
-        break;
-    }
-
     mAllocatedBufferNum = 0;
-    mBufferFreeThread = NULL;
     mAllocatedMidBufferNum = 0;
     mMidRealloc = false;
     mDstRealloc = false;
@@ -85,6 +73,7 @@ void ExynosMPP::initMPP()
 
 ExynosMPP::ExynosMPP()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mDisplay = NULL;
     mType = 0;
     mIndex = 0;
@@ -93,6 +82,7 @@ ExynosMPP::ExynosMPP()
 
 ExynosMPP::ExynosMPP(ExynosDisplay *display, int gscIndex)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mDisplay = display;
     mType = AVAILABLE_GSC_UNITS[gscIndex];
     mIndex = gscIndex;
@@ -101,6 +91,7 @@ ExynosMPP::ExynosMPP(ExynosDisplay *display, int gscIndex)
 
 ExynosMPP::ExynosMPP(ExynosDisplay *display, unsigned int mppType, unsigned int mppIndex)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mDisplay = display;
     mType = mppType;
     mIndex = mppIndex;
@@ -109,6 +100,7 @@ ExynosMPP::ExynosMPP(ExynosDisplay *display, unsigned int mppType, unsigned int 
 
 ExynosMPP::~ExynosMPP()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     if (mBufferFreeThread != NULL) {
         mBufferFreeThread->mRunning = false;
         mBufferFreeThread->requestExitAndWait();
@@ -118,14 +110,15 @@ ExynosMPP::~ExynosMPP()
         close(mSMemFd);
     mSMemFd = -1;
 }
-
+/** 多余的
 const android::String8& ExynosMPP::getName() const
 {
     return mName;
 }
-
+*/
 bool ExynosMPP::isSrcConfigChanged(exynos_mpp_img &c1, exynos_mpp_img &c2)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return isDstConfigChanged(c1, c2) ||
             c1.fw != c2.fw ||
             c1.fh != c2.fh;
@@ -133,6 +126,7 @@ bool ExynosMPP::isSrcConfigChanged(exynos_mpp_img &c1, exynos_mpp_img &c2)
 
 bool ExynosMPP::isFormatSupportedByMPP(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     if (mType == MPP_VPP_G) {
         if (!isFormatRgb(format))
             return false;
@@ -165,16 +159,19 @@ bool ExynosMPP::isFormatSupportedByMPP(int format)
 
 bool ExynosMPP::isCSCSupportedByMPP(int src_format __unused, int dst_format __unused, uint32_t dataSpace __unused)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return true;
 }
 
 bool ExynosMPP::formatRequiresMPP(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return isFormatSupportedByMPP(format) && !isFormatRgb(format);
 }
 
 int ExynosMPP::isProcessingSupported(hwc_layer_1_t &layer, int dst_format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
 
     if (isCompressed(layer)) {
@@ -331,11 +328,13 @@ int ExynosMPP::isProcessingSupported(hwc_layer_1_t &layer, int dst_format)
 
 bool ExynosMPP::isProcessingRequired(hwc_layer_1_t &layer, int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return formatRequiresMPP(format) || isScaled(layer) || isTransformed(layer) || isCompressed(layer);
 }
 
 void ExynosMPP::adjustSourceImage(hwc_layer_1_t &layer, exynos_mpp_img &srcImg)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *srcHandle = private_handle_t::dynamicCast(layer.handle);
     hwc_frect_t tmpFCrop = layer.sourceCropf;
     int cropWidthAlign = getCropWidthAlign(layer);
@@ -407,6 +406,7 @@ void ExynosMPP::adjustSourceImage(hwc_layer_1_t &layer, exynos_mpp_img &srcImg)
 
 void ExynosMPP::setupSrc(exynos_mpp_img &srcImg, hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *srcHandle = private_handle_t::dynamicCast(layer.handle);
 
     srcImg.fw = srcHandle->stride;
@@ -483,6 +483,7 @@ void ExynosMPP::setupSrc(exynos_mpp_img &srcImg, hwc_layer_1_t &layer)
 
 bool ExynosMPP::setupDoubleOperation(exynos_mpp_img &srcImg, exynos_mpp_img &midImg, hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     bool needDoubleOperation = false;
     bool needUnscaledCSC = false;
     private_handle_t *srcHandle = private_handle_t::dynamicCast(layer.handle);
@@ -558,6 +559,7 @@ bool ExynosMPP::setupDoubleOperation(exynos_mpp_img &srcImg, exynos_mpp_img &mid
 
 void ExynosMPP::setupMid(exynos_mpp_img &midImg)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     buffer_handle_t &midBuf = mMidBuffers[mCurrentBuf];
     private_handle_t *midHandle = private_handle_t::dynamicCast(midBuf);
 
@@ -578,6 +580,7 @@ void ExynosMPP::setupMid(exynos_mpp_img &midImg)
 void ExynosMPP::setupDst(exynos_mpp_img &srcImg, exynos_mpp_img &dstImg,
         int dstFormat, hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *srcHandle = private_handle_t::dynamicCast(layer.handle);
     dstImg.x = 0;
     dstImg.y = 0;
@@ -602,6 +605,7 @@ void ExynosMPP::setupDst(exynos_mpp_img &srcImg, exynos_mpp_img &dstImg,
 void ExynosMPP::setupBlendCfg(exynos_mpp_img __unused &srcImg, exynos_mpp_img &dstImg,
         hwc_layer_1_t __unused &layer1, hwc_layer_1_t &layer2, struct SrcBlendInfo &srcBlendInfo)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *src2Handle = private_handle_t::dynamicCast(layer2.handle);
 
     srcBlendInfo.blop = SRC_BL_OP_DST_OVER;
@@ -620,6 +624,7 @@ void ExynosMPP::setupBlendCfg(exynos_mpp_img __unused &srcImg, exynos_mpp_img &d
 
 size_t ExynosMPP::getBufferType(uint32_t usage)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     if ((getDrmMode(usage) == SECURE_DRM) && (usage & GRALLOC_USAGE_VIDEO_EXT))
         return MPP_BUFFER_VIDEO_EXT;
     else if (getDrmMode(usage) == SECURE_DRM)
@@ -632,6 +637,7 @@ size_t ExynosMPP::getBufferType(uint32_t usage)
 
 int ExynosMPP::getBufferUsage(private_handle_t *srcHandle)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     int usage = GRALLOC_USAGE_SW_READ_NEVER |
             GRALLOC_USAGE_SW_WRITE_NEVER |
             GRALLOC_USAGE_NOZEROED |
@@ -655,6 +661,7 @@ int ExynosMPP::getBufferUsage(private_handle_t *srcHandle)
 
 int ExynosMPP::reallocateBuffers(private_handle_t *srcHandle, exynos_mpp_img &dstImg, exynos_mpp_img &midImg, bool needDoubleOperation, uint32_t index)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     alloc_device_t* allocDevice = mAllocDevice;
     int ret = 0;
@@ -774,6 +781,7 @@ int ExynosMPP::reallocateBuffers(private_handle_t *srcHandle, exynos_mpp_img &ds
 
 void ExynosMPP::reusePreviousFrame(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     HDEBUGLOGD(eDebugMPP, "[USE] MPP_SKIP_DUPLICATE_FRAME_PROCESSING\n");
     if (layer.acquireFenceFd >= 0)
         close(layer.acquireFenceFd);
@@ -787,6 +795,7 @@ void ExynosMPP::reusePreviousFrame(hwc_layer_1_t &layer)
 
 void ExynosMPP::freeBuffersCloseFences()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     alloc_device_t* allocDevice = mAllocDevice;
     if ((mBufferType == MPP_BUFFER_VIDEO_EXT) && (mSMemFd > 0)) {
         int ret = 0;
@@ -842,6 +851,7 @@ void ExynosMPP::freeBuffersCloseFences()
 
 int ExynosMPP::processM2M(hwc_layer_1_t &layer, int dstFormat, hwc_frect_t *sourceCrop, bool __unused needBufferAlloc)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     HDEBUGLOGD(eDebugMPP, "configuring mType(%u) mIndex(%u) for memory-to-memory", mType, mIndex);
 
@@ -1110,6 +1120,7 @@ err_alloc:
 int ExynosMPP::processM2MWithB(hwc_layer_1_t &layer1, hwc_layer_1_t &layer2, int dstFormat,
         hwc_frect_t __unused *sourceCrop)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     HDEBUGLOGD(eDebugMPP, "configuring mType(%u) mIndex(%u) for blending", mType, mIndex);
 
     alloc_device_t* allocDevice = mAllocDevice;
@@ -1339,16 +1350,19 @@ err_gsc_config:
 
 int ExynosMPP::setupInternalMPP()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return 0;
 }
 
 void ExynosMPP::cleanupM2M()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     cleanupM2M(false);
 }
 
 void ExynosMPP::cleanupM2M(bool noFenceWait)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     if (!mMPPHandle)
         return;
@@ -1394,6 +1408,7 @@ void ExynosMPP::cleanupM2M(bool noFenceWait)
 
 void ExynosMPP::cleanupInternalMPP()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     if (mType != MPP_VG && mType != MPP_VGR && mType != MPP_VPP_G)
         return;
 
@@ -1403,6 +1418,7 @@ void ExynosMPP::cleanupInternalMPP()
 
 bool ExynosMPP::isDstConfigChanged(exynos_mpp_img &c1, exynos_mpp_img &c2)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return c1.x != c2.x ||
             c1.y != c2.y ||
             c1.w != c2.w ||
@@ -1417,6 +1433,7 @@ bool ExynosMPP::isDstConfigChanged(exynos_mpp_img &c1, exynos_mpp_img &c2)
 
 int ExynosMPP::getMaxWidth(hwc_layer_1_t __unused &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1429,6 +1446,7 @@ int ExynosMPP::getMaxWidth(hwc_layer_1_t __unused &layer)
 
 int ExynosMPP::getMaxHeight(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1441,6 +1459,7 @@ int ExynosMPP::getMaxHeight(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMinWidth(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1463,6 +1482,7 @@ int ExynosMPP::getMinWidth(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMinHeight(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1480,6 +1500,7 @@ int ExynosMPP::getMinHeight(hwc_layer_1_t &layer)
 
 int ExynosMPP::getSrcWidthAlign(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1507,6 +1528,7 @@ int ExynosMPP::getSrcWidthAlign(hwc_layer_1_t &layer)
 
 int ExynosMPP::getSrcHeightAlign(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1534,6 +1556,7 @@ int ExynosMPP::getSrcHeightAlign(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMaxCropWidth(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1549,6 +1572,7 @@ int ExynosMPP::getMaxCropWidth(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMaxCropHeight(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1561,6 +1585,7 @@ int ExynosMPP::getMaxCropHeight(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMinCropWidth(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1579,6 +1604,7 @@ int ExynosMPP::getMinCropWidth(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMinCropHeight(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1597,6 +1623,7 @@ int ExynosMPP::getMinCropHeight(hwc_layer_1_t &layer)
 
 int ExynosMPP::getCropWidthAlign(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1614,6 +1641,7 @@ int ExynosMPP::getCropWidthAlign(hwc_layer_1_t &layer)
 
 int ExynosMPP::getCropHeightAlign(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1631,6 +1659,7 @@ int ExynosMPP::getCropHeightAlign(hwc_layer_1_t &layer)
 
 int ExynosMPP::getSrcXOffsetAlign(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1654,6 +1683,7 @@ int ExynosMPP::getSrcXOffsetAlign(hwc_layer_1_t &layer)
 
 int ExynosMPP::getSrcYOffsetAlign(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     switch (mType) {
     case MPP_VG:
@@ -1677,6 +1707,7 @@ int ExynosMPP::getSrcYOffsetAlign(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMaxDstWidth(int __unused format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1689,6 +1720,7 @@ int ExynosMPP::getMaxDstWidth(int __unused format)
 
 int ExynosMPP::getMaxDstHeight(int __unused format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1701,6 +1733,7 @@ int ExynosMPP::getMaxDstHeight(int __unused format)
 
 int ExynosMPP::getMinDstWidth(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1718,6 +1751,7 @@ int ExynosMPP::getMinDstWidth(int format)
 
 int ExynosMPP::getMinDstHeight(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1735,6 +1769,7 @@ int ExynosMPP::getMinDstHeight(int format)
 
 int ExynosMPP::getDstWidthAlign(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1752,6 +1787,7 @@ int ExynosMPP::getDstWidthAlign(int format)
 
 int ExynosMPP::getDstHeightAlign(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1769,6 +1805,7 @@ int ExynosMPP::getDstHeightAlign(int format)
 
 int ExynosMPP::getMaxDownscale()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1781,6 +1818,7 @@ int ExynosMPP::getMaxDownscale()
 
 int ExynosMPP::getMaxDownscale(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     bool isPerpendicular = !!(layer.transform & HAL_TRANSFORM_ROT_90);
     float scaleRatio_H = (layer.sourceCropf.right - layer.sourceCropf.left)/WIDTH(layer.displayFrame);
@@ -1808,6 +1846,7 @@ int ExynosMPP::getMaxDownscale(hwc_layer_1_t &layer)
 
 int ExynosMPP::getMaxUpscale()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (mType) {
     case MPP_VG:
     case MPP_VGR:
@@ -1819,14 +1858,16 @@ int ExynosMPP::getMaxUpscale()
 
 bool ExynosMPP::inUse()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return mMPPHandle != NULL;
 }
 
 void ExynosMPP::setDisplay(ExynosDisplay *display)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mDisplay = display;
 }
-
+/** 多余的
 void ExynosMPP::preAssignDisplay(ExynosDisplay *display)
 {
     mPreAssignedDisplay = display;
@@ -1836,24 +1877,22 @@ bool ExynosMPP::isAssignable(ExynosDisplay *display)
 {
     return (mPreAssignedDisplay == display || mPreAssignedDisplay == NULL);
 }
-
+*/
 void ExynosMPP::setAllocDevice(alloc_device_t* allocDevice)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mAllocDevice = allocDevice;
-    if (mBufferFreeThread == NULL) {
-        mBufferFreeThread = new BufferFreeThread(this);
-        mBufferFreeThread->mRunning = true;
-        mBufferFreeThread->run("MPPThread");
-    }
 }
 
 bool ExynosMPP::wasUsedByDisplay(ExynosDisplay *display)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return mState == MPP_STATE_FREE && mDisplay == display;
 }
 
 void ExynosMPP::startTransition(ExynosDisplay *display)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mState = MPP_STATE_TRANSITION;
     mDisplay = display;
     {
@@ -1864,15 +1903,18 @@ void ExynosMPP::startTransition(ExynosDisplay *display)
 
 bool ExynosMPP::isOTF()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return false;
 }
 
 void ExynosMPP::cleanupOTF()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
 }
 
 bool ExynosMPP::checkNoExtVideoBuffer()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     android::Mutex::Autolock lock(mMutex);
     if (mBufferType != MPP_BUFFER_VIDEO_EXT)
         return true;
@@ -1882,6 +1924,7 @@ bool ExynosMPP::checkNoExtVideoBuffer()
 
 void ExynosMPP::freeBuffers()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     alloc_device_t* alloc_device = mAllocDevice;
     android::List<deleteBufferInfo >::iterator it;
     android::List<deleteBufferInfo >::iterator end;
@@ -1907,6 +1950,7 @@ void ExynosMPP::freeBuffers()
         
 bool BufferFreeThread::threadLoop()
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     while(mRunning) {
         {
             android::Mutex::Autolock lock(mExynosMPP->mMutex);
@@ -1929,6 +1973,7 @@ bool BufferFreeThread::threadLoop()
         
 void *ExynosMPP::createMPP(int id, int mode, int outputMode, int drm)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     mppFact = new MppFactory();
     libmpp = mppFact->CreateMpp(id, mode, outputMode, drm);
@@ -1938,6 +1983,7 @@ void *ExynosMPP::createMPP(int id, int mode, int outputMode, int drm)
 
 void *ExynosMPP::createBlendMPP(int id, int mode, int outputMode, int drm)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     mppFact = new MppFactory();
     libmpp = mppFact->CreateBlendMpp(id, mode, outputMode, drm);
 
@@ -1946,29 +1992,34 @@ void *ExynosMPP::createBlendMPP(int id, int mode, int outputMode, int drm)
 
 int ExynosMPP::configMPP(void *handle, exynos_mpp_img *src, exynos_mpp_img *dst)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     return libmpp->ConfigMpp(handle, src, dst);
 }
 
 int ExynosMPP::configBlendMpp(void *handle, exynos_mpp_img *src, exynos_mpp_img *dst, struct SrcBlendInfo  *srcblendinfo)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return libmpp->ConfigBlendMpp(handle, src, dst, srcblendinfo);
 }
 
 int ExynosMPP::runMPP(void *handle, exynos_mpp_img *src, exynos_mpp_img *dst)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     return libmpp->RunMpp(handle, src, dst);
 }
 
 int ExynosMPP::stopMPP(void *handle)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     return libmpp->StopMpp(handle);
 }
 
 void ExynosMPP::destroyMPP(void *handle)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     libmpp->DestroyMpp(handle);
     delete(mppFact);
@@ -1976,17 +2027,20 @@ void ExynosMPP::destroyMPP(void *handle)
 
 int ExynosMPP::setCSCProperty(void *handle, unsigned int eqAuto, unsigned int fullRange, unsigned int colorspace)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return libmpp->SetCSCProperty(handle, eqAuto, fullRange, colorspace);
 }
 
 int ExynosMPP::freeMPP(void *handle)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     ATRACE_CALL();
     return libmpp->FreeMpp(handle);
 }
 
 bool ExynosMPP::bufferChanged(hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     return mSrcConfig.fw != (uint32_t)handle->stride ||
         mSrcConfig.fh != (uint32_t)handle->vstride ||
