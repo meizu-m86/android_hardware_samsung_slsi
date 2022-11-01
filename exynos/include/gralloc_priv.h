@@ -166,6 +166,7 @@ struct private_handle_t {
     }
 
     static int validate(const native_handle* h) {
+        ALOGE("private_handle_t::validate(const native_handle* h) entry");
         const private_handle_t* hnd = (const private_handle_t*)h;
         if (!h || h->version != sizeof(native_handle) ||
                 hnd->numInts + hnd->numFds != sNumInts() + sNumFds ||
@@ -176,11 +177,14 @@ struct private_handle_t {
             ALOGE("invalid gralloc handle (at %p)", reinterpret_cast<void *>(const_cast<native_handle *>(h)));
             return -EINVAL;
         }
+        ALOGE("validate(const native_handle* h): hnd->numInts:%d,hnd->numFds:%d,sNumInts():%d,sNumFds:%d",
+                        hnd->numInts , hnd->numFds , sNumInts() , sNumFds);
         return 0;
     }
 
     static private_handle_t* dynamicCast(const native_handle* in)
     {
+        ALOGE("private_handle_t::dynamicCast(const native_handle* h) entry");
         if (validate(in) == 0)
             return (private_handle_t*) in;
 
@@ -193,7 +197,7 @@ struct private_handle_t {
 
     int     dssRatio;
     int     cropLeft;
-    //int     cropTop;
+    int     cropTop;
     //int     cropRight;
     //int     cropBottom;
 

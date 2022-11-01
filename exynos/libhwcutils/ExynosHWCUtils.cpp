@@ -85,31 +85,6 @@ void dumpMPPImage(uint32_t type, exynos_mpp_img &c)
             c.narrowRgb, c.acquireFenceFd, c.releaseFenceFd, c.mem_type);
 }
 
-#ifndef USES_FIMC
-void dumpBlendMPPImage(struct SrcBlendInfo &c)
-{
-    ALOGV("\tblop = %d, srcblendfmt = %u, srcblendpremulti = %u\n",
-        c.blop, c.srcblendfmt, c.srcblendpremulti);
-    ALOGV("\tx = %u, y = %u, w = %u, h = %u, fw = %u\n",
-        c.srcblendhpos, c.srcblendvpos, c.srcblendwidth,
-        c.srcblendheight, c.srcblendstride);
-    ALOGV("\tglobalalpha = %d, tglobalalpha.val = %u, cscspec = %d, cscspec.space = %u, cscspec.wide = %u\n",
-        c.globalalpha.enable, c.globalalpha.val, c.cscspec.enable,
-        c.cscspec.space, c.cscspec.wide);
-}
-void dumpBlendMPPImage(uint32_t type, struct SrcBlendInfo &c)
-{
-    HDEBUGLOGD(type, "\tblop = %d, srcblendfmt = %u, srcblendpremulti = %u\n",
-        c.blop, c.srcblendfmt, c.srcblendpremulti);
-    HDEBUGLOGD(type, "\tx = %u, y = %u, w = %u, h = %u, fw = %u\n",
-        c.srcblendhpos, c.srcblendvpos, c.srcblendwidth,
-        c.srcblendheight, c.srcblendstride);
-    HDEBUGLOGD(type, "\tglobalalpha = %d, tglobalalpha.val = %u, cscspec = %d, cscspec.space = %u, cscspec.wide = %u\n",
-        c.globalalpha.enable, c.globalalpha.val, c.cscspec.enable,
-        c.cscspec.space, c.cscspec.wide);
-}
-#endif
-
 bool isDstCropWidthAligned(int dest_w)
 {
     int dst_crop_w_alignement;
@@ -122,11 +97,13 @@ bool isDstCropWidthAligned(int dest_w)
 
 bool isTransformed(const hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return layer.transform != 0;
 }
 
 bool isRotated(const hwc_layer_1_t &layer)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     return (layer.transform & HAL_TRANSFORM_ROT_90) ||
             (layer.transform & HAL_TRANSFORM_ROT_180);
 }
@@ -139,6 +116,7 @@ bool isScaled(const hwc_layer_1_t &layer)
 
 bool isFormatRgb(int format)
 {
+    ALOGE("[%s: %d]", __func__, __LINE__);
     switch (format) {
     case HAL_PIXEL_FORMAT_RGBA_8888:
     case HAL_PIXEL_FORMAT_RGBX_8888:
@@ -275,16 +253,6 @@ bool isFullRangeColor(const hwc_layer_1_t &layer)
 {
     private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
     return (handle->format == HAL_PIXEL_FORMAT_EXYNOS_YCrCb_420_SP_M_FULL);
-}
-
-bool isCompressed(const hwc_layer_1_t &layer)
-{
-    if (layer.handle) {
-        private_handle_t *handle = private_handle_t::dynamicCast(layer.handle);
-        if (handle->internal_format & ((uint64_t)(1) << 32))
-            return true;
-    }
-    return false;
 }
 
 bool compareYuvLayerConfig(int videoLayers, uint32_t index,

@@ -123,11 +123,9 @@ class ExynosMPP {
 
         /* Override these virtual functions in chip directory to handle per-chip differences */
         virtual bool isFormatSupportedByMPP(int format);
-        virtual bool isCSCSupportedByMPP(int src_format, int dst_format, uint32_t dataSpace);
         virtual bool isProcessingRequired(hwc_layer_1_t &layer, int format);
         virtual int isProcessingSupported(hwc_layer_1_t &layer, int dst_format);
         virtual int processM2M(hwc_layer_1_t &layer, int dstFormat, hwc_frect_t *sourceCrop, bool needBufferAlloc = true);
-        virtual int processM2MWithB(hwc_layer_1_t &layer1, hwc_layer_1_t &layer2, int dstFormat, hwc_frect_t *sourceCrop);
         virtual int setupInternalMPP();
         virtual void cleanupM2M();
         virtual void cleanupM2M(bool noFenceWait);
@@ -149,9 +147,6 @@ class ExynosMPP {
         virtual int getSrcHeightAlign(hwc_layer_1_t &layer);
         virtual int getMaxCropWidth(hwc_layer_1_t &layer);
         virtual int getMaxCropHeight(hwc_layer_1_t &layer);
-        virtual int configBlendMpp(void *handle, exynos_mpp_img *src,
-                        exynos_mpp_img *dst,
-                        struct SrcBlendInfo  *srcblendinfo);
 
         /* Fields */
         static int                      mainDisplayWidth;
@@ -200,8 +195,6 @@ class ExynosMPP {
         virtual void setupSrc(exynos_mpp_img &srcImg, hwc_layer_1_t &layer);
         virtual void setupMid(exynos_mpp_img &srcImg);
         virtual void setupDst(exynos_mpp_img &srcImg, exynos_mpp_img &dstImg, int dst_format, hwc_layer_1_t &layer);
-        virtual void setupBlendCfg(exynos_mpp_img &srcImg, exynos_mpp_img &dstImg, hwc_layer_1_t &layer1,
-                hwc_layer_1_t &layer2, struct SrcBlendInfo &srcBlendInfo);
 
         virtual int getMinCropWidth(hwc_layer_1_t &layer);
         virtual int getMinCropHeight(hwc_layer_1_t &layer);
@@ -212,7 +205,6 @@ class ExynosMPP {
         virtual int getMinDstHeight(int format);
 
         virtual void *createMPP(int id, int mode, int outputMode, int drm);
-        virtual void *createBlendMPP(int id, int mode, int outputMode, int drm);
         virtual int configMPP(void *handle, exynos_mpp_img *src, exynos_mpp_img *dst);
         virtual int runMPP(void *handle, exynos_mpp_img *src, exynos_mpp_img *dst);
         virtual int stopMPP(void *handle);

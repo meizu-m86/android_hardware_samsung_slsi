@@ -104,10 +104,6 @@ void dumpLayer(hwc_layer_1_t const *l);
 void dumpLayer(uint32_t type, hwc_layer_1_t const *l);
 void dumpMPPImage(exynos_mpp_img &c);
 void dumpMPPImage(uint32_t type, exynos_mpp_img &c);
-#ifndef USES_FIMC
-void dumpBlendMPPImage(struct SrcBlendInfo &c);
-void dumpBlendMPPImage(uint32_t type, struct SrcBlendInfo &c);
-#endif
 bool isDstCropWidthAligned(int dest_w);
 bool isTransformed(const hwc_layer_1_t &layer);
 bool isRotated(const hwc_layer_1_t &layer);
@@ -124,7 +120,6 @@ bool isSrcCropFloat(hwc_frect &frect);
 bool isFloat(float f);
 bool isUHD(const hwc_layer_1_t &layer);
 bool isFullRangeColor(const hwc_layer_1_t &layer);
-bool isCompressed(const hwc_layer_1_t &layer);
 bool compareYuvLayerConfig(int videoLayers, uint32_t index,
         hwc_layer_1_t &layer,
         video_layer_config *pre_src_data, video_layer_config *pre_dst_data);
